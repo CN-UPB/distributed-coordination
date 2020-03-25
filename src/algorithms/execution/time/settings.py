@@ -1,4 +1,4 @@
-config = ['hc_0.3']
+config = ['hc_0.3+']
 networks = ['gts_ce_149.graphml']
 algos = ['gpasp', 'spr1', 'spr2']
 

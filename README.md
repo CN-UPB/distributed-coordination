@@ -32,6 +32,11 @@ Then follow original setup procedure:
 pip install -r requirements.txt
 ```
 
+For evaluation, also install these dependencies:
+
+```
+pip install -r eval_requirements.txt
+```
 
 ## Notes
 
