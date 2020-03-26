@@ -28,14 +28,15 @@ def main():
     poll_pause = int(sys.argv[4])
 
     # scenarios = ['llc', 'lnc', 'hc']
-    #     # networks = ['../../../../params/networks/bics_34.graphml', '../../../../params/networks/dfn_58.graphml',
-    #     #             '../../../../params/networks/intellifiber_73.graphml']
-    #     # ingress = ['0.1', '0.15', '0.2', '0.25', '0.3', '0.35', '0.4', '0.45', '0.5']
-    #     # algos = ['gpasp', 'spr1', 'spr2']
-    scenarios = ['lnc']
+    # networks = ['../../../../params/networks/bics_34.graphml', '../../../../params/networks/dfn_58.graphml',
+    #             '../../../../params/networks/intellifiber_73.graphml']
+    # ingress = ['0.1', '0.15', '0.2', '0.25', '0.3', '0.35', '0.4', '0.45', '0.5']
+    # algos = ['gpasp', 'spr1', 'spr2']
+    scenarios = ['hc']
     networks = ['../../../../params/networks/dfn_58.graphml']
-    ingress = ['0.1']
-    algos = ['gpasp']
+    # ingress = ['0.1']
+    ingress = ['0.1', '0.2', '0.3', '0.4', '0.5']
+    algos = ['random']
 
     running_processes = []
     for r in runs:

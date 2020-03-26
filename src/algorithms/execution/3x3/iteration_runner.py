@@ -6,6 +6,7 @@ from siminterface.simulator import Simulator
 from algorithms.greedy.gpasp import GPASPAlgo
 from algorithms.score.spr1 import SPR1Algo
 from algorithms.score.spr2 import SPR2Algo
+from algorithms.prototypes.random.random_walk import RWAlgo
 
 log = logging.getLogger(__name__)
 
@@ -43,6 +44,8 @@ def main():
         algo = SPR1Algo(simulator)
     elif algo_id == 'spr2':
         algo = SPR2Algo(simulator)
+    elif algo_id == 'random':
+        algo = RWAlgo(simulator)
 
     algo.init(os.path.abspath(args['network']),
               os.path.abspath(args['service_functions']),

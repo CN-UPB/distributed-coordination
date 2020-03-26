@@ -209,11 +209,11 @@ class RWAlgo:
         """
         <Callback>
         """
-        #self.simulator.write_state()
-        state = self.simulator.get_state()
-
-        log.warning(f'Network Stats after time: {state.simulation_time} / 'f'{state.network_stats} / '
-                    f'{state.network["metrics"]}')
+        self.simulator.write_state()
+        # state = self.simulator.get_state()
+        #
+        # log.warning(f'Network Stats after time: {state.simulation_time} / 'f'{state.network_stats} / '
+        #             f'{state.network["metrics"]}')
 
     def periodic_remove(self):
         """
