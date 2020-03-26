@@ -38,6 +38,20 @@ For evaluation, also install these dependencies:
 pip install -r eval_requirements.txt
 ```
 
-## Notes
-
 Due to the use of deprecated networkx functions and their removal in the 2.4 version, released while developing, the networkx library is locked to version 2.3
+
+## Usage
+
+* All relevant scripts for running experiments are in `src/algorithms/execution`
+* The folders `time` and `3x3` are for different experiments but contain similar scripts. Choose either one or create a new one.
+* Create configurtion files by running `config_creator.py`. The generated configurations specify percentage of ignress nodes, capacities, etc.
+* Adjust the network, algorithms, ingress in `iterator.py`
+* Then call `python iterator.py start_run end_run num_parallel poll_pause` to run experiments.
+* For example `python iterator.py 50 55 4 5` will run 6 repetitions (ID 50-55) on 4 cores, polling every 5s if a core is free.
+* The results are saved in the subfolder `scenarios` according to run ID, config, algorithm, etc.
+
+## Evaluation of Results
+
+* To evaluate the results, aggregate and plot them.
+* To aggregate, run `aggregator.py`
+* Then plot with `plotter.py`. Or easier (for me) with a Jupyter notebook such as `time/eval.ipynb`

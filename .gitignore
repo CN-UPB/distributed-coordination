@@ -22,7 +22,7 @@ tpk_3-out/
 gp-runner-out/
 
 # Generated configurations
-configurations/
+#configurations/
 
 # Plotted charts
 plotted/

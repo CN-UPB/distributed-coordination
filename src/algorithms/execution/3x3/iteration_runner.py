@@ -11,6 +11,7 @@ log = logging.getLogger(__name__)
 
 
 def main():
+    # eg: python iteraton_runner.py 50 lnc ../../../../params/networks/dfn_58.graphml 0.1 gpasp
     run = sys.argv[1]
     scenario = sys.argv[2]
     network_path = sys.argv[3]
