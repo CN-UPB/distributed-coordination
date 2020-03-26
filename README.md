@@ -55,5 +55,6 @@ Due to the use of deprecated networkx functions and their removal in the 2.4 ver
 ## Evaluation of Results
 
 * To evaluate the results, aggregate and plot them.
-* To aggregate, run `aggregator.py`
+* To aggregate, run `aggregator.py`. You can adjust settings in `settings.py`. 
+* In case of 3x3, also specify the runs to aggregate, eg, `python aggregator.py 0 49`.
 * Then plot with `plotter.py`. Or easier (for me) with a Jupyter notebook such as `time/eval.ipynb`

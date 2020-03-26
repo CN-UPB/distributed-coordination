@@ -5,6 +5,7 @@ import importlib
 
 settings = importlib.import_module('algorithms.execution.3x3.settings')
 
+# eg, 0 49
 start = int(sys.argv[1])
 end = int(sys.argv[2]) + 1
 runs = [str(x) for x in range(start, end)]
