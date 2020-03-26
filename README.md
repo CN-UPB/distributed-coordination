@@ -27,6 +27,8 @@ Requires Python 3.6. Install with [virtualenv](https://virtualenv.pypa.io/en/sta
 git checkout adapted
 ```
 
+Install dependency [`common-utils`](https://github.com/RealVNF/common-utils).
+
 Then follow original setup procedure:
 ```bash
 pip install -r requirements.txt

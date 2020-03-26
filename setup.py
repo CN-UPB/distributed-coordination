@@ -5,7 +5,7 @@ requirements = [
     'geopy',
     'pyyaml>=5.1',
     'numpy',
-    'coord-interface'
+    'common-utils'
 ]
 
 test_requirements = [
