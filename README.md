@@ -34,6 +34,9 @@ Then follow original setup procedure:
 pip install -r requirements.txt
 ```
 
+If you want to use the global B-JointSP algorithm as comparison, you also need to install it: 
+[B-JointSP](https://github.com/CN-UPB/B-JointSP)
+
 For evaluation, also install these dependencies:
 
 ```

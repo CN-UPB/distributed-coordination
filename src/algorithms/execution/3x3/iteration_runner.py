@@ -7,6 +7,7 @@ from algorithms.greedy.gpasp import GPASPAlgo
 from algorithms.score.spr1 import SPR1Algo
 from algorithms.score.spr2 import SPR2Algo
 from algorithms.prototypes.random.random_walk import RWAlgo
+from algorithms.centralized.bjointsp import BJointSPAlgo
 
 log = logging.getLogger(__name__)
 
@@ -46,6 +47,8 @@ def main():
         algo = SPR2Algo(simulator)
     elif algo_id == 'random':
         algo = RWAlgo(simulator)
+    elif algo_id == 'bjointsp':
+        algo = BJointSPAlgo(simulator)
 
     algo.init(os.path.abspath(args['network']),
               os.path.abspath(args['service_functions']),
