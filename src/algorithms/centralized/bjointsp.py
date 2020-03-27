@@ -98,26 +98,52 @@ class BJointSPAlgo:
     def init_flow(self, flow):
         """
         Callback when new flow arrives.
-        TODO: Implement main calculations here and attach to flow state
         """
         template = self.sfc_templates[flow.sfc]
         source = self.create_source_list(flow)
         result = bjointsp_place(self.network_path, template, source, source_template_object=True,
                                 networkx=self.network_copy, write_result=False)
-        print(result)
-        print("ok")
+
+        # save bjointsp's placement & routing in flow state/metadata
+        # placement: SF name --> SF placement node
+        placement = {}
+        for vnf in result['placement']['vnfs']:
+            placement[vnf['name']] = vnf['node']
+        flow['placement'] = placement
+        # routing: link src --> link dest
+        # TODO: is this all we need? could one src send to multiple dests based on arc?
+        routing = {}
+        for link in result['placement']['links']:
+            routing[link['link_src']] = link['link_dst']
+        flow['routing'] = routing
 
     def pass_flow(self, flow):
         """
         Callback when flow arrives at a node.
         Here, the flow should be just processed or forwarded as decided at the beginning (see flow state).
         """
-        raise NotImplementedError()
+        state = self.simulator.get_state()
+
+        # TODO: check if processing flow locally --> process
+        # process flow here?
+        if flow['placement'][flow.current_sf] == flow.current_node_id:
+            log.info(f'Processing flow {flow.flow_id} at node {flow.current_node_id}.')
+            # TODO: implement processing
+
+        # TODO: else forward according to selected route
+        else:
+            if flow.current_node_id == flow.egress_node_id:
+                log.info(f'Flow {flow.flow_id} reached its egress {flow.egress_node_id}.')
+            else:
+                self.forward_flow(flow, state)
+
+        self.simulator.apply(state.derive_action())
 
     def forward_flow(self, flow, state):
         """
         Forward flow according to saved path. If not possible due to congestion, drop flow.
         """
+        # TODO: adjust to bjointsp's routing decisions
         node_id = flow.current_node_id
         assert len(flow['path']) > 0
         next_neighbor_id = flow['path'].pop(0)
