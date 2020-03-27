@@ -34,7 +34,7 @@ vnfs:
     inputs_bwd: 0
     outputs_fwd: 0
     outputs_bwd: 0
-    cpu: [0,0]
+    cpu: [1,0]
     mem: [0,0]
     vnf_delay: 5
     out_fwd: []
