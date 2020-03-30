@@ -130,20 +130,27 @@ class BJointSPAlgo:
         """
         state = self.simulator.get_state()
 
-        # process flow here?
-        if flow['placement'][flow.current_sf] == flow.current_node_id:
-            log.info(f'Processing flow {flow.flow_id} at node {flow.current_node_id}.')
-            # process locally
-            state.flow_processing_rules[flow.current_node_id][flow.flow_id] = [flow.current_sf]
-            # place SF if it doesn't exist yet
-            if flow.current_sf not in state.placement[flow.current_node_id]:
-                state.placement[flow.current_node_id].append(flow.current_sf)
+        # just forward flows that are fully processed
+        # FIXME: leads to crashes
+        if flow.is_processed():
+            flow['state'] = 'departure'
+            self.forward_flow(flow, state)
 
-        # else forward flow
         else:
-            if flow.current_node_id == flow.egress_node_id:
-                log.info(f'Flow {flow.flow_id} reached its egress {flow.egress_node_id}.')
+            # process flow here?
+            if flow['placement'][flow.current_sf] == flow.current_node_id:
+                log.info(f'Processing flow {flow.flow_id} at node {flow.current_node_id}.')
+                # process locally
+                state.flow_processing_rules[flow.current_node_id][flow.flow_id] = [flow.current_sf]
+                # place SF if it doesn't exist yet
+                if flow.current_sf not in state.placement[flow.current_node_id]:
+                    state.placement[flow.current_node_id].append(flow.current_sf)
+
+            # else forward flow
             else:
+                # if flow.current_node_id == flow.egress_node_id:
+                #     log.info(f'Flow {flow.flow_id} reached its egress {flow.egress_node_id}.')
+                # else:
                 self.forward_flow(flow, state)
 
         # TODO: forward to egress node. either just shortest path. or set egress as fixed instance for bjointsp
