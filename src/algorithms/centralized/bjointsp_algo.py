@@ -95,13 +95,19 @@ class BJointSPAlgo:
         }
         return [src_dict]
 
+    def create_sink_list(self, flow):
+        """Create and return list with fixed location of sinks 'vnf_sink'"""
+        sink_dict = {'node': flow.egress_node_id, 'vnf': 'vnf_sink'}
+        return [sink_dict]
+
     def init_flow(self, flow):
         """
         Callback when new flow arrives.
         """
         template = self.sfc_templates[flow.sfc]
         source = self.create_source_list(flow)
-        result = bjointsp_place(self.network_path, template, source, source_template_object=True,
+        sink = self.create_sink_list(flow)
+        result = bjointsp_place(self.network_path, template, source, source_template_object=True, fixed_vnfs=sink,
                                 networkx=self.network_copy, write_result=False)
 
         # save bjointsp's placement & routing in flow state/metadata
