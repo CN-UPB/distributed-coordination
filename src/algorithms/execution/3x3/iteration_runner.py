@@ -34,6 +34,7 @@ def main():
 
     logging.getLogger('coordsim').setLevel(logging.CRITICAL)
     logging.getLogger('coordsim.reader').setLevel(logging.CRITICAL)
+    logging.getLogger('algorithms.centralized.bjointsp').setLevel(logging.DEBUG)
 
     simulator = Simulator(test_mode=True)
 

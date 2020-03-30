@@ -40,7 +40,7 @@ class BJointSPAlgo:
 
     def load_sfc_templates(self):
         """Load and return dict with SFC templates for B-JointSP"""
-        # TODO: when testing with another algorithm, this needs to be adjusted!
+        # TODO: when testing with other SFCs, this needs to be adjusted!
         this_dir = pathlib.Path(__file__).parent.absolute()
         with open(os.path.join(this_dir, 'service_templates/sfc_1.yaml')) as f:
             sfc1 = yaml.load(f, Loader=yaml.FullLoader)
@@ -124,18 +124,23 @@ class BJointSPAlgo:
         """
         state = self.simulator.get_state()
 
-        # TODO: check if processing flow locally --> process
         # process flow here?
         if flow['placement'][flow.current_sf] == flow.current_node_id:
             log.info(f'Processing flow {flow.flow_id} at node {flow.current_node_id}.')
-            # TODO: implement processing
+            # process locally
+            state.flow_processing_rules[flow.current_node_id][flow.flow_id] = [flow.current_sf]
+            # place SF if it doesn't exist yet
+            if flow.current_sf not in state.placement[flow.current_node_id]:
+                state.placement[flow.current_node_id].append(flow.current_sf)
 
-        # TODO: else forward according to selected route
+        # else forward flow
         else:
             if flow.current_node_id == flow.egress_node_id:
                 log.info(f'Flow {flow.flow_id} reached its egress {flow.egress_node_id}.')
             else:
                 self.forward_flow(flow, state)
+
+        # TODO: forward to egress node. either just shortest path. or set egress as fixed instance for bjointsp
 
         self.simulator.apply(state.derive_action())
 
@@ -143,19 +148,19 @@ class BJointSPAlgo:
         """
         Forward flow according to saved path. If not possible due to congestion, drop flow.
         """
-        # TODO: adjust to bjointsp's routing decisions
-        node_id = flow.current_node_id
-        assert len(flow['path']) > 0
-        next_neighbor_id = flow['path'].pop(0)
-        edge = self.simulator.params.network[node_id][next_neighbor_id]
+        next_neighbor_id = flow['routing'][flow.current_node_id]
+        edge = self.simulator.params.network[flow.current_node_id][next_neighbor_id]
 
         # Can forward?
         if edge['remaining_cap'] >= flow.dr:
             # yes => set forwarding rule
-            state.flow_forwarding_rules[node_id][flow.flow_id] = next_neighbor_id
+            log.info(f'Forwarding flow {flow.flow_id} from {flow.current_node_id} to {next_neighbor_id}.')
+            state.flow_forwarding_rules[flow.current_node_id][flow.flow_id] = next_neighbor_id
         # else drop
         # TODO: should I implement the same adaptive shortest path as in the distributed algos here?
         else:
+            log.info(f'Dropping flow {flow.flow_id} at {flow.current_node_id} because the link to {next_neighbor_id} '
+                     f'is overloaded')
             flow['state'] = 'drop'
             flow['path'] = []
             flow['death_cause'] = 'Forward: The link on the planned path is congested.'
@@ -186,19 +191,40 @@ class BJointSPAlgo:
         <Callback>
         Called to remove no longer used forwarding rules, keep it overseeable.
         """
-        # Direct access for speed gain
         self.simulator.params.flow_forwarding_rules[node_id].pop(flow.flow_id, None)
 
-    def depart_flow(self, flow):
-        """
-        <Callback>
-        Called to record custom metrics.
-        """
-        self.metrics.processed_flow(flow)
 
-    def drop_flow(self, flow):
-        """
-        <Callback>
-        Called to record custom metrics.
-        """
-        self.metrics.dropped_flow(flow)
+def main():
+    # for testing and debugging
+    # Simulator params
+    network = 'abilene_11.graphml'
+    args = {
+        'network': f'../../../params/networks/{network}',
+        'service_functions': '../../../params/services/3sfcs.yaml',
+        'config': '../../../params/config/simple_config.yaml',
+        'seed': 9999,
+        'output_path': f'bjointsp-out/{network}'
+    }
+
+    # Setup logging
+    timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+    os.makedirs(f'{args["output_path"]}/logs', exist_ok=True)
+    logging.basicConfig(level=logging.INFO)
+    logging.getLogger('bjointsp').setLevel(logging.WARNING)
+    logging.getLogger('coordsim').setLevel(logging.INFO)
+    logging.getLogger('coordsim.reader').setLevel(logging.WARNING)
+    simulator = Simulator(test_mode=True)
+
+    # Setup algorithm
+    algo = BJointSPAlgo(simulator)
+    algo.init(os.path.abspath(args['network']),
+              os.path.abspath(args['service_functions']),
+              os.path.abspath(args['config']),
+              args['seed'],
+              args['output_path'])
+    # Execute orchestrated simulation
+    algo.run()
+
+
+if __name__ == "__main__":
+    main()

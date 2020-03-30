@@ -230,7 +230,7 @@ class FlowSimulator:
                 # Try to process Flow
                 processing_rule = flow_processing_rules[flow.current_node_id][flow.flow_id]
                 if sf in processing_rule:
-                    # Flow has permission to be processed for requested service. Check if service function actually exists
+                    # Flow has permission to be processed for requested service. Check if SF actually exists
                     if sf in self.params.sf_placement[flow.current_node_id]:
                         log.debug(f'Flow {flow.flow_id} STARTED ARRIVING at SF {flow.current_sf} at '
                                  f'node {flow.current_node_id} for processing. Time: {self.env.now}')
@@ -467,8 +467,9 @@ class FlowSimulator:
         self.metrics.add_end2end_delay_of_dropped_flows(flow.end2end_delay)
 
         # assert flow['state'] == 'drop', f'Algorithm has not foreseen drop of flow {flow.flow_id}'
-        if flow['state'] != 'drop':
-            print(f'Algorithm has not foreseen drop of flow {flow.flow_id}')
+        if 'state' in flow.user_data.keys():
+            if flow['state'] != 'drop':
+                print(f'Algorithm has not foreseen drop of flow {flow.flow_id}')
 
-        if 'drop_flow' in self.params.interception_callbacks:
-            self.params.interception_callbacks['drop_flow'](flow)
+            if 'drop_flow' in self.params.interception_callbacks:
+                self.params.interception_callbacks['drop_flow'](flow)
