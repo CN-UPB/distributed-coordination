@@ -37,6 +37,7 @@ class BJointSPAlgo:
 
         # bjointsp: set service templates paths (hard coded!)
         self.sfc_templates = self.load_sfc_templates()
+        self.sfs = self.load_sfs(self.sfc_templates)
 
     def load_sfc_templates(self):
         """Load and return dict with SFC templates for B-JointSP"""
@@ -54,6 +55,13 @@ class BJointSPAlgo:
             'sfc_3': sfc3
         }
         return sfc_templates
+
+    def load_sfs(self, templates):
+        """Create and return set of SFs in the templates. Set = no duplicates"""
+        sfs = set()
+        for t_name, t in templates.items():
+            sfs.update([vnf['name'] for vnf in t['vnfs']])
+        return sfs
 
     def init(self, network_path, service_functions_path, config_path, seed, output_id, resource_functions_path=""):
         # normal setup
@@ -100,6 +108,14 @@ class BJointSPAlgo:
         sink_dict = {'node': flow.egress_node_id, 'vnf': 'vnf_sink'}
         return [sink_dict]
 
+    def extract_sf_sink(self, arc):
+        """Extract and return sink SF from arc string. Eg, c.0->vnf_sink.0 should return vnf_sink"""
+        # remove port ('.0') and split
+        arc_clean = arc.replace('.0', '')
+        sf_list = arc_clean.split('->')
+        # return sink (2nd vnf)
+        return sf_list[1]
+
     def init_flow(self, flow):
         """
         Callback when new flow arrives.
@@ -116,12 +132,11 @@ class BJointSPAlgo:
         for vnf in result['placement']['vnfs']:
             placement[vnf['name']] = vnf['node']
         flow['placement'] = placement
-        # routing: link src --> link dest
-        # TODO: is this all we need? could one src send to multiple dests based on arc?
-        # TODO: NO! need routing per SF! SF-->src-->dst
-        routing = {}
+        # routing: SF --> (link src --> link dest)
+        routing = {sf: {} for sf in self.sfs}
         for link in result['placement']['links']:
-            routing[link['link_src']] = link['link_dst']
+            sf_sink = self.extract_sf_sink(link['arc'])
+            routing[sf_sink][link['link_src']] = link['link_dst']
         flow['routing'] = routing
 
     def pass_flow(self, flow):
@@ -131,12 +146,12 @@ class BJointSPAlgo:
         """
         state = self.simulator.get_state()
 
-        # just forward flows that are fully processed
-        # FIXME: leads to crashes
+        # flows that are fully processed are forwarded to their egress without further processing
         if flow.is_processed():
-            # TODO: don't forward if at egress node already. also refactor if-else
-            flow['state'] = 'departure'
-            self.forward_flow(flow, state)
+            # set current_sf to "vnf_sink" for fully processed flows. necessary for routing to egress
+            flow.current_sf = 'vnf_sink'
+            if flow.egress_node_id != flow.current_node_id:
+                self.forward_flow(flow, state)
 
         else:
             # process flow here?
@@ -150,12 +165,7 @@ class BJointSPAlgo:
 
             # else forward flow
             else:
-                # if flow.current_node_id == flow.egress_node_id:
-                #     log.info(f'Flow {flow.flow_id} reached its egress {flow.egress_node_id}.')
-                # else:
                 self.forward_flow(flow, state)
-
-        # TODO: forward to egress node. either just shortest path. or set egress as fixed instance for bjointsp
 
         self.simulator.apply(state.derive_action())
 
@@ -163,7 +173,7 @@ class BJointSPAlgo:
         """
         Forward flow according to saved path. If not possible due to congestion, drop flow.
         """
-        next_neighbor_id = flow['routing'][flow.current_node_id]
+        next_neighbor_id = flow['routing'][flow.current_sf][flow.current_node_id]
         edge = self.simulator.params.network[flow.current_node_id][next_neighbor_id]
 
         # Can forward?
