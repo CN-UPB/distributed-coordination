@@ -74,6 +74,7 @@ class BJointSPAlgo:
                                          interception_callbacks=callbacks)
 
         log.info(f'Network Stats after init(): {init_state.network_stats}')
+        # TODO: that won't work. we need to copy before each bjointsp call to get the current resources
         self.network_copy = self.simulator.get_network_copy()
 
         # bjointsp
@@ -123,6 +124,8 @@ class BJointSPAlgo:
         template = self.sfc_templates[flow.sfc]
         source = self.create_source_list(flow)
         sink = self.create_sink_list(flow)
+        # FIXME: make sure self.network_copy is up to date (or use self.network directly if bjointsp doesn't change it)
+        # FIXME: adjust bjointsp to use 'remaining_cap' instead of 'cap' to extract caps (adjustable)
         result = bjointsp_place(self.network_path, template, source, source_template_object=True, fixed_vnfs=sink,
                                 networkx=self.network_copy, write_result=False)
 
