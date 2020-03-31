@@ -118,6 +118,7 @@ class BJointSPAlgo:
         flow['placement'] = placement
         # routing: link src --> link dest
         # TODO: is this all we need? could one src send to multiple dests based on arc?
+        # TODO: NO! need routing per SF! SF-->src-->dst
         routing = {}
         for link in result['placement']['links']:
             routing[link['link_src']] = link['link_dst']
@@ -133,6 +134,7 @@ class BJointSPAlgo:
         # just forward flows that are fully processed
         # FIXME: leads to crashes
         if flow.is_processed():
+            # TODO: don't forward if at egress node already. also refactor if-else
             flow['state'] = 'departure'
             self.forward_flow(flow, state)
 
