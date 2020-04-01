@@ -27,8 +27,6 @@ class BJointSPAlgo:
         # Besides interaction we need the simulator reference to query all needed information. Not all information can
         # conveniently put into the simulator state, nevertheless it is justified that the algorithm can access these.
         self.simulator = simulator
-        # To evaluate if some operations are feasible we need to modify the network topology, that must not happen on
-        # the shared network instance
 
         # bjointsp: set service templates paths (hard coded!)
         self.sfc_templates = self.load_sfc_templates()
@@ -59,26 +57,22 @@ class BJointSPAlgo:
         return sfs
 
     def init(self, network_path, service_functions_path, config_path, seed, output_id, resource_functions_path=""):
+        self.network_path = network_path
+        
         # normal setup
         callbacks = {'pass_flow': self.pass_flow, 'init_flow': self.init_flow, 'post_forwarding': self.post_forwarding,
-                     'periodic': [(self.periodic_measurement, 100, 'State measurement.'),
-                                  (self.periodic_remove, 10, 'Remove SF interception.')]}
+                     'periodic': [(self.periodic_measurement, 100, 'State measurement.')]}
 
         init_state = self.simulator.init(network_path, service_functions_path, config_path, seed, output_id,
-                                         resource_functions_path=resource_functions_path,
+                                         resource_functions_path=resource_functions_path, 
                                          interception_callbacks=callbacks)
-
         log.info(f'Network Stats after init(): {init_state.network_stats}')
-
-        # bjointsp
-        self.network_path = network_path
+        
 
     def run(self):
-        placement = defaultdict(list)
-        processing_rules = defaultdict(lambda : defaultdict(list))
-        forwarding_rules = defaultdict(dict)
-        action = ExtendedSimulatorAction(placement=placement, scheduling={}, flow_forwarding_rules=forwarding_rules,
-                                         flow_processing_rules=processing_rules)
+        action = ExtendedSimulatorAction(placement=defaultdict(list), scheduling={}, 
+                                         flow_forwarding_rules=defaultdict(dict),
+                                         flow_processing_rules=defaultdict(lambda : defaultdict(list)))
         self.simulator.apply(action)
         log.info(f'Start simulation at: {datetime.now().strftime("%H-%M-%S")}')
         self.simulator.run()
@@ -114,6 +108,7 @@ class BJointSPAlgo:
         """
         Callback when new flow arrives.
         """
+        # call bjointsp to calculate placement and routing for the new flow
         template = self.sfc_templates[flow.sfc]
         source = self.create_source_list(flow)
         sink = self.create_sink_list(flow)
@@ -176,13 +171,10 @@ class BJointSPAlgo:
             log.info(f'Forwarding flow {flow.flow_id} from {flow.current_node_id} to {next_neighbor_id}.')
             state.flow_forwarding_rules[flow.current_node_id][flow.flow_id] = next_neighbor_id
         # else drop
-        # TODO: should I implement the same adaptive shortest path as in the distributed algos here?
         else:
-            log.info(f'Dropping flow {flow.flow_id} at {flow.current_node_id} because the link to {next_neighbor_id} '
-                     f'is overloaded')
+            log.warning(f'Dropping flow {flow.flow_id} at {flow.current_node_id} because the link to '
+                        f'{next_neighbor_id} is overloaded')
             flow['state'] = 'drop'
-            flow['path'] = []
-            flow['death_cause'] = 'Forward: The link on the planned path is congested.'
 
     def periodic_measurement(self):
         """
@@ -190,20 +182,6 @@ class BJointSPAlgo:
         Called periodically to capture the simulator state.
         """
         state = self.simulator.write_state()
-
-    def periodic_remove(self):
-        """
-         <Callback>
-         Called periodically to check if vnfs have to be removed.
-        """
-        # standard code
-        # state = self.simulator.get_state()
-        # for node_id, node_data in state.network['nodes'].items():
-        #     for sf, sf_data in node_data['available_sf'].items():
-        #         if (sf_data['load'] == 0) and ((state.simulation_time - sf_data['last_requested']) > self.vnf_timeout):
-        #             state.placement[node_id].remove(sf)
-        # self.simulator.apply(state.derive_action())
-        pass
 
     def post_forwarding(self, node_id, flow):
         """
@@ -215,19 +193,27 @@ class BJointSPAlgo:
 
 def main():
     # for testing and debugging
-    # Simulator params
-    network = 'abilene_11.graphml'
+    # Simple test params
+    # network = 'abilene_11.graphml'
+    # args = {
+    #     'network': f'../../../params/networks/{network}',
+    #     'service_functions': '../../../params/services/3sfcs.yaml',
+    #     'config': '../../../params/config/simple_config.yaml',
+    #     'seed': 9999,
+    #     'output_path': f'bjointsp-out/{network}'
+    # }
+
+    # Evaluation params
+    network = 'dfn_58.graphml'
     args = {
         'network': f'../../../params/networks/{network}',
         'service_functions': '../../../params/services/3sfcs.yaml',
-        'config': '../../../params/config/simple_config.yaml',
+        'config': '../../../params/config/hc_0.1.yaml',
         'seed': 9999,
         'output_path': f'bjointsp-out/{network}'
     }
 
-    # Setup logging
-    timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
-    os.makedirs(f'{args["output_path"]}/logs', exist_ok=True)
+    # Setup logging to screen
     logging.basicConfig(level=logging.INFO)
     logging.getLogger('bjointsp').setLevel(logging.WARNING)
     logging.getLogger('coordsim').setLevel(logging.INFO)
@@ -236,11 +222,8 @@ def main():
 
     # Setup algorithm
     algo = BJointSPAlgo(simulator)
-    algo.init(os.path.abspath(args['network']),
-              os.path.abspath(args['service_functions']),
-              os.path.abspath(args['config']),
-              args['seed'],
-              args['output_path'])
+    algo.init(os.path.abspath(args['network']), os.path.abspath(args['service_functions']),
+              os.path.abspath(args['config']), args['seed'], args['output_path'])
     # Execute orchestrated simulation
     algo.run()
 

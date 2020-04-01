@@ -7,7 +7,7 @@ from algorithms.greedy.gpasp import GPASPAlgo
 from algorithms.score.spr1 import SPR1Algo
 from algorithms.score.spr2 import SPR2Algo
 from algorithms.prototypes.random.random_walk import RWAlgo
-from algorithms.centralized.bjointsp import BJointSPAlgo
+from algorithms.centralized.bjointsp_algo import BJointSPAlgo
 
 log = logging.getLogger(__name__)
 
@@ -34,7 +34,7 @@ def main():
 
     logging.getLogger('coordsim').setLevel(logging.CRITICAL)
     logging.getLogger('coordsim.reader').setLevel(logging.CRITICAL)
-    logging.getLogger('algorithms.centralized.bjointsp').setLevel(logging.DEBUG)
+    logging.getLogger('algorithms.centralized.bjointsp').setLevel(logging.WARNING)
 
     simulator = Simulator(test_mode=True)
 
