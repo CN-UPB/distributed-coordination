@@ -129,6 +129,28 @@ class BJointSPAlgo:
             routing[sf_sink][link['link_src']] = link['link_dst']
         flow['routing'] = routing
 
+    def remove_rules(self, flow, state):
+        """Remove specified flow from the forwarding and processing rules. Remove in place & return."""
+        log.debug(f"Removing all forwarding and processing rules for flow {flow.flow_id}")
+        # removing from forwarding rules
+        for rule in state.flow_forwarding_rules.values():
+            rule.pop(flow.flow_id, None)
+        # remove from processing rules
+        for rule in state.flow_processing_rules.values():
+            rule.pop(flow.flow_id, None)
+        return state
+
+    def routing_to_sf(self, flow):
+        """
+        Set routing rules for the given flow to its current SF. By copying rules for previous SFs.
+        Necessary when calling B-JointSP again due to lack of node resources.
+        Then, it recomputes a new path, but starts again from the source VNF. But the flow may already be at another VNF.
+        """
+        sfc = self.sfc_templates[flow.sfc]
+        # get ordered list of sfs
+        sf_order = [vnf['name'] for vnf in sfc['vnfs']]
+        # TODO: check current SF and copy routing rules from all previous SFs to this SF (in order)
+
     def pass_flow(self, flow):
         """
         Callback when flow arrives at a node.
@@ -146,12 +168,27 @@ class BJointSPAlgo:
         else:
             # process flow here?
             if flow['placement'][flow.current_sf] == flow.current_node_id:
-                log.info(f'Processing flow {flow.flow_id} at node {flow.current_node_id}.')
-                # process locally
-                state.flow_processing_rules[flow.current_node_id][flow.flow_id] = [flow.current_sf]
-                # place SF if it doesn't exist yet
-                if flow.current_sf not in state.placement[flow.current_node_id]:
-                    state.placement[flow.current_node_id].append(flow.current_sf)
+                node = state.network['nodes'][flow.current_node_id]
+                demand_p, _ = Placement.calculate_demand(flow, flow.current_sf, node['available_sf'],
+                                                         self.simulator.params.sf_list)
+
+                if node['capacity'] >= demand_p:
+                    log.info(f'Processing flow {flow.flow_id} at node {flow.current_node_id}.')
+                    # process locally
+                    state.flow_processing_rules[flow.current_node_id][flow.flow_id] = [flow.current_sf]
+                    # place SF if it doesn't exist yet
+                    if flow.current_sf not in state.placement[flow.current_node_id]:
+                        state.placement[flow.current_node_id].append(flow.current_sf)
+                # what to do if there's not enough node cap?
+                else:
+                    # TODO: make this configurable for evaluation
+                    log.warning(f"About to drop flow {flow.flow_id} due to lack of node cap. Calling B-JointSP again.")
+                    # remove existing rules for the flow
+                    state = self.remove_rules(flow, state)
+                    # call bjointsp and recalculate placement and routing and pass flow again
+                    self.init_flow(flow)
+                    # TODO: apply routing from any prev SFs
+                    self.pass_flow(flow)
 
             # else forward flow
             else:

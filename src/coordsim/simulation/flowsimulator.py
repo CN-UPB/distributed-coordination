@@ -233,7 +233,7 @@ class FlowSimulator:
                     # Flow has permission to be processed for requested service. Check if SF actually exists
                     if sf in self.params.sf_placement[flow.current_node_id]:
                         log.debug(f'Flow {flow.flow_id} STARTED ARRIVING at SF {flow.current_sf} at '
-                                 f'node {flow.current_node_id} for processing. Time: {self.env.now}')
+                                  f'node {flow.current_node_id} for processing. Time: {self.env.now}')
                         yield self.env.process(self.process_flow(flow, sfc))
                     else:
                         log.warning(f'SF was not found at requested node. Dropping flow {flow.flow_id}.')
@@ -415,8 +415,8 @@ class FlowSimulator:
 
             # Remove load from sf
             self.params.network.nodes[current_node_id]['available_sf'][current_sf]['load'] -= flow.dr
-            assert self.params.network.nodes[current_node_id]['available_sf'][current_sf][
-                       'load'] >= 0, 'SF load cannot be less than 0!'
+            assert self.params.network.nodes[current_node_id]['available_sf'][current_sf]['load'] >= 0, \
+                'SF load cannot be less than 0!'
             # Recalculation is necessary because other flows could have already arrived or departed at the node
             used_total_capacity = 0.0
             for sf_i, sf_data in self.params.network.nodes[current_node_id]['available_sf'].items():
