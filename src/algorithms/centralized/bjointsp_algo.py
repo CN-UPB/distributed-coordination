@@ -267,7 +267,7 @@ def main():
     simulator = Simulator(test_mode=True)
 
     # Setup algorithm
-    algo = BJointSPAlgo(simulator)
+    algo = BJointSPAlgo(simulator, recalc_before_drop=True)
     algo.init(os.path.abspath(args['network']), os.path.abspath(args['service_functions']),
               os.path.abspath(args['config']), args['seed'], args['output_path'])
     # Execute orchestrated simulation

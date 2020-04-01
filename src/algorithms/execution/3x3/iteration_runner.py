@@ -50,6 +50,8 @@ def main():
         algo = RWAlgo(simulator)
     elif algo_id == 'bjointsp':
         algo = BJointSPAlgo(simulator)
+    elif algo_id == 'bjointsp_recalc':
+        algo = BJointSPAlgo(simulator, recalc_before_drop=True)
 
     algo.init(os.path.abspath(args['network']),
               os.path.abspath(args['service_functions']),

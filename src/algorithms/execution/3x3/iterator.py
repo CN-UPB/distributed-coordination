@@ -36,7 +36,7 @@ def main():
     networks = ['../../../../params/networks/dfn_58.graphml']
     # ingress = ['0.1']
     ingress = ['0.2', '0.3', '0.4', '0.5']
-    algos = ['bjointsp']
+    algos = ['bjointsp_recalc']
 
     running_processes = []
     for r in runs:
