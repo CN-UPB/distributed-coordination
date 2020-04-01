@@ -113,7 +113,8 @@ class BJointSPAlgo:
         source = self.create_source_list(flow)
         sink = self.create_sink_list(flow)
         result = bjointsp_place(self.network_path, template, source, source_template_object=True, fixed_vnfs=sink,
-                                networkx=self.simulator.network, networkx_cap='remaining_cap', write_result=False)
+                                networkx=self.simulator.network, networkx_cap='remaining_cap', write_result=False,
+                                print_best=False)
 
         # save bjointsp's placement & routing in flow state/metadata
         # placement: SF name --> SF placement node
