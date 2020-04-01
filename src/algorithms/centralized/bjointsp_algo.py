@@ -2,16 +2,12 @@ import logging
 import os
 import yaml
 import pathlib
-import networkx as nx
-import numpy as np
 from datetime import datetime
 from collections import defaultdict
 from siminterface.simulator import ExtendedSimulatorAction
 from siminterface.simulator import Simulator
-from auxiliary.link import Link
 from auxiliary.placement import Placement
 from bjointsp.main import place as bjointsp_place
-from bjointsp.read_write.reader import read_template
 
 log = logging.getLogger(__name__)
 
@@ -23,14 +19,19 @@ class BJointSPAlgo:
     Then just forward and execute.
     """
 
-    def __init__(self, simulator: Simulator):
-        # Besides interaction we need the simulator reference to query all needed information. Not all information can
-        # conveniently put into the simulator state, nevertheless it is justified that the algorithm can access these.
+    def __init__(self, simulator: Simulator, recalc_before_drop=False):
+        """
+        Create B-JointSP algo object.
+        @param simulator: Simulator reference to query all needed information
+        @param recalc_before_drop: Whether or not to recalculate placement and routing (by calling B-JointSP again)
+        for a flow that is about to be dropped due to lack of node resources. Default: False
+        """
         self.simulator = simulator
 
         # bjointsp: set service templates paths (hard coded!)
         self.sfc_templates = self.load_sfc_templates()
         self.sfs = self.load_sfs(self.sfc_templates)
+        self.recalc_before_drop = recalc_before_drop
 
     def load_sfc_templates(self):
         """Load and return dict with SFC templates for B-JointSP"""
@@ -186,16 +187,16 @@ class BJointSPAlgo:
                         state.placement[flow.current_node_id].append(flow.current_sf)
                 # what to do if there's not enough node cap?
                 else:
-                    # TODO: make this configurable for evaluation
-                    log.warning(f"Not enough resources at {flow.currrent_node_id} to process flow {flow.flow_id}. "
-                                f"Recalculating placement and routing with B-JointSP.")
-                    # remove existing rules for the flow
-                    state = self.remove_rules(flow, state)
-                    # call bjointsp and recalculate placement and routing and pass flow again
-                    self.init_flow(flow)
-                    # set routing rules to get to next SF
-                    self.routing_to_sf(flow)
-                    self.pass_flow(flow)
+                    log.warning(f"Not enough resources at {flow.current_node_id} to process flow {flow.flow_id}.")
+                    if self.recalc_before_drop:
+                        log.info(f"Recalculating placement and routing for flow {flow.flow_id} with B-JointSP.")
+                        # remove existing rules for the flow
+                        state = self.remove_rules(flow, state)
+                        # call bjointsp and recalculate placement and routing and pass flow again
+                        self.init_flow(flow)
+                        # set routing rules to get to next SF
+                        self.routing_to_sf(flow)
+                        self.pass_flow(flow)
 
             # else forward flow
             else:
