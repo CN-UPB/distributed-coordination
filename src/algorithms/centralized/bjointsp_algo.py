@@ -149,7 +149,12 @@ class BJointSPAlgo:
         sfc = self.sfc_templates[flow.sfc]
         # get ordered list of sfs
         sf_order = [vnf['name'] for vnf in sfc['vnfs']]
-        # TODO: check current SF and copy routing rules from all previous SFs to this SF (in order)
+        # copy routing for all previous SFs
+        for sf in sf_order:
+            # stop at the current SF
+            if sf == flow.current_sf:
+                return
+            flow['routing'][flow.current_sf].update(flow['routing'][sf])
 
     def pass_flow(self, flow):
         """
@@ -182,12 +187,14 @@ class BJointSPAlgo:
                 # what to do if there's not enough node cap?
                 else:
                     # TODO: make this configurable for evaluation
-                    log.warning(f"About to drop flow {flow.flow_id} due to lack of node cap. Calling B-JointSP again.")
+                    log.warning(f"Not enough resources at {flow.currrent_node_id} to process flow {flow.flow_id}. "
+                                f"Recalculating placement and routing with B-JointSP.")
                     # remove existing rules for the flow
                     state = self.remove_rules(flow, state)
                     # call bjointsp and recalculate placement and routing and pass flow again
                     self.init_flow(flow)
-                    # TODO: apply routing from any prev SFs
+                    # set routing rules to get to next SF
+                    self.routing_to_sf(flow)
                     self.pass_flow(flow)
 
             # else forward flow
