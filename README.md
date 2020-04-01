@@ -23,9 +23,6 @@ Simulate flow-level, inter-node network coordination including scaling and place
 ## Setup
 
 Requires Python 3.6. Install with [virtualenv](https://virtualenv.pypa.io/en/stable/) to not break original coord-sim installation. Make sure to install simulator with adapted source files, located on the default `adapted` branch:
-```bash
-git checkout adapted
-```
 
 Install dependency [`common-utils`](https://github.com/RealVNF/common-utils).
 
