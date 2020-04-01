@@ -23,7 +23,7 @@ scenarios = ['hc']
 networks = ['dfn_58.graphml']
 ingress = ['0.1', '0.2', '0.3', '0.4', '0.5']
 # ingress = ['0.1']
-algos = ['bjointsp']
+algos = ['bjointsp_recalc']
 metric_sets = {'flow': ['total_flows', 'successful_flows', 'dropped_flows', 'in_network_flows'],
                'delay': ['avg_end2end_delay_of_processed_flows']}
 
