@@ -124,19 +124,21 @@ class BJointSPAlgo:
         result = bjointsp_place(self.network_path, template, source, source_template_object=True, fixed_vnfs=sink,
                                 networkx=self.simulator.network, networkx_cap='remaining_cap', write_result=False,
                                 print_best=False)
-
-        # save bjointsp's placement & routing in flow state/metadata
-        # placement: SF name --> SF placement node
-        placement = {}
-        for vnf in result['placement']['vnfs']:
-            placement[vnf['name']] = vnf['node']
-        flow['placement'] = placement
-        # routing: SF --> (link src --> link dest)
-        routing = {sf: {} for sf in self.sfs}
-        for link in result['placement']['links']:
-            sf_sink = self.extract_sf_sink(link['arc'])
-            routing[sf_sink][link['link_src']] = link['link_dst']
-        flow['routing'] = routing
+        if result is None:
+            log.warning(f"Could not compute placement & routing for flow {flow.flow_id}.")
+        else:
+            # save bjointsp's placement & routing in flow state/metadata
+            # placement: SF name --> SF placement node
+            placement = {}
+            for vnf in result['placement']['vnfs']:
+                placement[vnf['name']] = vnf['node']
+            flow['placement'] = placement
+            # routing: SF --> (link src --> link dest)
+            routing = {sf: {} for sf in self.sfs}
+            for link in result['placement']['links']:
+                sf_sink = self.extract_sf_sink(link['arc'])
+                routing[sf_sink][link['link_src']] = link['link_dst']
+            flow['routing'] = routing
 
         # record decision time
         decision_time = time.time() - start
@@ -253,25 +255,25 @@ class BJointSPAlgo:
 
 if __name__ == "__main__":
     # for testing and debugging
-    # Simple test params
-    network = 'abilene_11.graphml'
-    args = {
-        'network': f'../../../params/networks/{network}',
-        'service_functions': '../../../params/services/3sfcs.yaml',
-        'config': '../../../params/config/simple_config.yaml',
-        'seed': 9999,
-        'output_path': f'bjointsp-out/{network}'
-    }
-
-    # Evaluation params
-    # network = 'dfn_58.graphml'
+    # # Simple test params
+    # network = 'abilene_11.graphml'
     # args = {
     #     'network': f'../../../params/networks/{network}',
     #     'service_functions': '../../../params/services/3sfcs.yaml',
-    #     'config': '../../../params/config/hc_0.5.yaml',
+    #     'config': '../../../params/config/simple_config.yaml',
     #     'seed': 9999,
     #     'output_path': f'bjointsp-out/{network}'
     # }
+
+    # Evaluation params
+    network = 'dfn_58.graphml'
+    args = {
+        'network': f'../../../params/networks/{network}',
+        'service_functions': '../../../params/services/3sfcs.yaml',
+        'config': '../../../params/config/hc_0.5.yaml',
+        'seed': 9999,
+        'output_path': f'bjointsp-out/{network}'
+    }
 
     # Setup logging to screen
     logging.basicConfig(level=logging.INFO)
