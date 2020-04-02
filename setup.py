@@ -5,7 +5,8 @@ requirements = [
     'geopy',
     'pyyaml>=5.1',
     'numpy',
-    'common-utils'
+    'common-utils',
+    'pandas'
 ]
 
 test_requirements = [

@@ -2,6 +2,7 @@ import logging
 import os
 import yaml
 import pathlib
+import time
 from datetime import datetime
 from collections import defaultdict
 from siminterface.simulator import ExtendedSimulatorAction
@@ -68,7 +69,11 @@ class BJointSPAlgo:
                                          resource_functions_path=resource_functions_path, 
                                          interception_callbacks=callbacks)
         log.info(f'Network Stats after init(): {init_state.network_stats}')
-        
+
+        # measure decisions
+        # decision in case of bjointsp = "init_flow". flow id --> (node id --> list of times)
+        # attention: needs lots of memory when running long!
+        self.decision_times = defaultdict(lambda: defaultdict(list))
 
     def run(self):
         action = ExtendedSimulatorAction(placement=defaultdict(list), scheduling={}, 
@@ -79,6 +84,8 @@ class BJointSPAlgo:
         self.simulator.run()
         log.info(f'End simulation at: {datetime.now().strftime("%H-%M-%S")}')
         log.info(f'Network Stats after run(): {self.simulator.get_state().network_stats}')
+        log.info("Writing decisions")
+        self.simulator.writer.write_decision_times(self.decision_times)
 
     def create_source_list(self, flow):
         """Create and return list of dict of flow source to be passed as input to B-JointSP. Increment flow counter."""
@@ -109,6 +116,7 @@ class BJointSPAlgo:
         """
         Callback when new flow arrives.
         """
+        start = time.time()
         # call bjointsp to calculate placement and routing for the new flow
         template = self.sfc_templates[flow.sfc]
         source = self.create_source_list(flow)
@@ -129,6 +137,11 @@ class BJointSPAlgo:
             sf_sink = self.extract_sf_sink(link['arc'])
             routing[sf_sink][link['link_src']] = link['link_dst']
         flow['routing'] = routing
+
+        # record decision time
+        decision_time = time.time() - start
+        # all done centrally at one logical global node for Bjointsp
+        self.decision_times[flow.flow_id]['global'].append(decision_time)
 
     def remove_rules(self, flow, state):
         """Remove specified flow from the forwarding and processing rules. Remove in place & return."""
@@ -218,6 +231,7 @@ class BJointSPAlgo:
             state.flow_forwarding_rules[flow.current_node_id][flow.flow_id] = next_neighbor_id
         # else drop
         else:
+            # TODO: call bjointsp again? call up to X times before dropping a flow?
             log.warning(f'Dropping flow {flow.flow_id} at {flow.current_node_id} because the link to '
                         f'{next_neighbor_id} is overloaded')
             flow['state'] = 'drop'
@@ -254,7 +268,7 @@ def main():
     args = {
         'network': f'../../../params/networks/{network}',
         'service_functions': '../../../params/services/3sfcs.yaml',
-        'config': '../../../params/config/hc_0.1.yaml',
+        'config': '../../../params/config/hc_0.5.yaml',
         'seed': 9999,
         'output_path': f'bjointsp-out/{network}'
     }

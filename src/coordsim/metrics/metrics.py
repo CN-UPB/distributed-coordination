@@ -58,8 +58,8 @@ class MetricStore:
         self['running_time'] = 0.0
 
         # Current number of active flows per each node
-        self['current_active_flows'] = defaultdict(lambda: defaultdict(lambda: defaultdict(np.int)))
-        self['current_traffic'] = defaultdict(lambda: defaultdict(lambda: defaultdict(np.float64)))
+        self['current_active_flows'] = defaultdict(lambda: defaultdict(lambda: defaultdict(int)))
+        self['current_traffic'] = defaultdict(lambda: defaultdict(lambda: defaultdict(float)))
 
         self['total_node_load'] = 0.0
         self['avg_node_load'] = 0.0
