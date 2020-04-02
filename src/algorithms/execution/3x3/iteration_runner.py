@@ -1,7 +1,6 @@
 import sys
 import logging
 import os
-
 from siminterface.simulator import Simulator
 from algorithms.greedy.gpasp import GPASPAlgo
 from algorithms.score.spr1 import SPR1Algo
