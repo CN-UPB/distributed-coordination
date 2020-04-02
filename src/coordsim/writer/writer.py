@@ -28,6 +28,7 @@ class ResultWriter():
             self.resources_file_name = f'{self.result_path}/resources.csv'
             self.metrics_file_name = f'{self.result_path}/metrics.csv'
             self.decisions_file_name = f'{self.result_path}/decisions.csv'
+            self.agg_decisions_file_name = f'{self.result_path}/agg_decisions.csv'
 
             # self.result_path = f'{simulator_params["output_id"]}/results/' \
             #     f'{os.path.basename(simulator_params["network"])}/' \
@@ -165,8 +166,6 @@ class ResultWriter():
 
     def write_decision_times(self, decision_times):
         """New function for writing decision times (avg, std, count) at the end of simulation."""
-        # close existing stream
-        self.decisions_stream.close()
         # columns: flow ID, node ID, num decisions, avg decision time, std dev decision time
         data = {'flow': [], 'node': [], 'dec_count': [], 'dec_time_avg': [], 'dec_time_std': []}
         for f, node_dict in decision_times.items():
@@ -178,7 +177,7 @@ class ResultWriter():
                 data['dec_time_std'].append(np.std(times))
         # create df and write to csv
         df = pd.DataFrame(data=data)
-        df.to_csv(self.decisions_file_name)
+        df.to_csv(self.agg_decisions_file_name)
 
     def close_streams(self):
         """

@@ -84,7 +84,7 @@ class BJointSPAlgo:
         self.simulator.run()
         log.info(f'End simulation at: {datetime.now().strftime("%H-%M-%S")}')
         log.info(f'Network Stats after run(): {self.simulator.get_state().network_stats}')
-        log.info("Writing decisions")
+        log.info(f"Writing aggregated decisions to {self.simulator.writer.agg_decisions_file_name}")
         self.simulator.writer.write_decision_times(self.decision_times)
 
     def create_source_list(self, flow):
@@ -251,27 +251,27 @@ class BJointSPAlgo:
         self.simulator.params.flow_forwarding_rules[node_id].pop(flow.flow_id, None)
 
 
-def main():
+if __name__ == "__main__":
     # for testing and debugging
     # Simple test params
-    # network = 'abilene_11.graphml'
-    # args = {
-    #     'network': f'../../../params/networks/{network}',
-    #     'service_functions': '../../../params/services/3sfcs.yaml',
-    #     'config': '../../../params/config/simple_config.yaml',
-    #     'seed': 9999,
-    #     'output_path': f'bjointsp-out/{network}'
-    # }
-
-    # Evaluation params
-    network = 'dfn_58.graphml'
+    network = 'abilene_11.graphml'
     args = {
         'network': f'../../../params/networks/{network}',
         'service_functions': '../../../params/services/3sfcs.yaml',
-        'config': '../../../params/config/hc_0.5.yaml',
+        'config': '../../../params/config/simple_config.yaml',
         'seed': 9999,
         'output_path': f'bjointsp-out/{network}'
     }
+
+    # Evaluation params
+    # network = 'dfn_58.graphml'
+    # args = {
+    #     'network': f'../../../params/networks/{network}',
+    #     'service_functions': '../../../params/services/3sfcs.yaml',
+    #     'config': '../../../params/config/hc_0.5.yaml',
+    #     'seed': 9999,
+    #     'output_path': f'bjointsp-out/{network}'
+    # }
 
     # Setup logging to screen
     logging.basicConfig(level=logging.INFO)
@@ -286,7 +286,3 @@ def main():
               os.path.abspath(args['config']), args['seed'], args['output_path'])
     # Execute orchestrated simulation
     algo.run()
-
-
-if __name__ == "__main__":
-    main()
