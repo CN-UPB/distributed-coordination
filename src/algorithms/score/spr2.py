@@ -1,4 +1,7 @@
 import math
+import time
+import os
+import logging
 from collections import defaultdict
 import networkx as nx
 from auxiliary.link import Link
@@ -55,6 +58,11 @@ class SPR2Algo:
         # Record current general load, used to calculate score
         self.occupancy_list = defaultdict(list)
 
+        # measure decisions
+        # decision in case of bjointsp = "init_flow". flow id --> (node id --> list of times)
+        # attention: needs lots of memory when running long!
+        self.decision_times = defaultdict(lambda: defaultdict(list))
+
     def run(self):
         placement = defaultdict(list)
         processing_rules = defaultdict(lambda: defaultdict(list))
@@ -65,11 +73,13 @@ class SPR2Algo:
         self.simulator.run()
         self.simulator.write_state()
         self.simulator.write_decisions()
+        self.simulator.writer.write_decision_times(self.decision_times)
 
     def init_flow(self, flow):
         """
         <Callback>
         """
+        start = time.time()
         flow['state'] = 'transit'
         flow['blocked_links'] = []
         try:
@@ -78,6 +88,10 @@ class SPR2Algo:
         except NoCandidateException:
             flow['state'] = 'drop'
             flow['path'] = []
+        # record decision time
+        decision_time = time.time() - start
+        # all done centrally at one logical global node for Bjointsp
+        self.decision_times[flow.flow_id][flow.current_node_id].append(decision_time)
 
     def pass_flow(self, flow):
         """
@@ -85,7 +99,7 @@ class SPR2Algo:
         This is the main dynamic logic of the algorithm, whenever a flow is passed to node this function is called.
         The associated node is determined and all actions and information are computed from its perspective.
         """
-
+        start = time.time()
         # Get state information
         state = self.simulator.get_state()
         placement = state.placement
@@ -143,6 +157,11 @@ class SPR2Algo:
             processing_rules[exec_node_id].pop(flow.flow_id, None)
             forwarding_rules[exec_node_id].pop(flow.flow_id, None)
             self.node_mortality[exec_node_id] += 1
+
+        # record decision time
+        decision_time = time.time() - start
+        # all done centrally at one logical global node for Bjointsp
+        self.decision_times[flow.flow_id][flow.current_node_id].append(decision_time)
 
         self.simulator.apply(state.derive_action())
 
@@ -408,3 +427,30 @@ class SPR2Algo:
         <Callback>
         """
         self.simulator.write_state()
+
+
+if __name__ == "__main__":
+    # for testing and debugging
+    # Simple test params
+    network = 'abilene_11.graphml'
+    args = {
+        'network': f'../../../params/networks/{network}',
+        'service_functions': '../../../params/services/3sfcs.yaml',
+        'config': '../../../params/config/simple_config.yaml',
+        'seed': 9999,
+        'output_path': f'spr2-out/{network}'
+    }
+
+    # Setup logging to screen
+    logging.basicConfig(level=logging.INFO)
+    logging.getLogger('coordsim').setLevel(logging.INFO)
+    logging.getLogger('coordsim.reader').setLevel(logging.WARNING)
+    simulator = Simulator(test_mode=True)
+
+    # Setup algorithm
+    algo = SPR2Algo(simulator)
+    algo.init(os.path.abspath(args['network']), os.path.abspath(args['service_functions']),
+              os.path.abspath(args['config']), args['seed'], args['output_path'])
+    # Execute orchestrated simulation
+    algo.run()
+

@@ -165,13 +165,13 @@ class GPASPAlgo:
             processing_rules[node_id].pop(flow.flow_id, None)
             forwarding_rules[node_id].pop(flow.flow_id, None)
 
-        # Apply state to simulator
-        self.simulator.apply(state.derive_action())
-
         # record decision time
         decision_time = time.time() - start
         # all done centrally at one logical global node for Bjointsp
         self.decision_times[flow.flow_id][flow.current_node_id].append(decision_time)
+
+        # Apply state to simulator
+        self.simulator.apply(state.derive_action())
 
     def forward_flow(self, flow, state):
         """
@@ -284,16 +284,6 @@ if __name__ == "__main__":
         'seed': 9999,
         'output_path': f'gpasp-out/{network}'
     }
-
-    # Evaluation params
-    # network = 'dfn_58.graphml'
-    # args = {
-    #     'network': f'../../../params/networks/{network}',
-    #     'service_functions': '../../../params/services/3sfcs.yaml',
-    #     'config': '../../../params/config/hc_0.5.yaml',
-    #     'seed': 9999,
-    #     'output_path': f'bjointsp-out/{network}'
-    # }
 
     # Setup logging to screen
     logging.basicConfig(level=logging.INFO)
