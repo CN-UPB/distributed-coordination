@@ -1,21 +1,6 @@
 import sys
 import subprocess
 import time
-from datetime import timedelta
-from timeit import default_timer as timer
-from collections import defaultdict
-import os
-import json
-
-# for r in runs:
-#     for s in scenarios:
-#         for net in networks:
-#             for ing in ingress:
-#                 processes = []
-#                 for a in algos:
-#                     processes.append(subprocess.Popen(['python', 'iteration_runner.py', s, r, net, ing, a]))
-#                 for p in processes:
-#                     p.wait()
 
 
 def main():
@@ -35,8 +20,8 @@ def main():
     scenarios = ['hc']
     networks = ['../../../../params/networks/dfn_58.graphml']
     # ingress = ['0.1']
-    ingress = ['0.1']
-    algos = ['bjointsp', 'bjointsp_recalc']
+    ingress = ['0.1', '0.2', '0.3', '0.4', '0.5']
+    algos = ['gpasp', 'spr2''bjointsp', 'bjointsp_recalc']
 
     running_processes = []
     for r in runs:
