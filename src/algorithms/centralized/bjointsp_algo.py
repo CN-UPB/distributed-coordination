@@ -126,6 +126,7 @@ class BJointSPAlgo:
                                 print_best=False)
         if result is None:
             log.warning(f"Could not compute placement & routing for flow {flow.flow_id}.")
+            flow['placement'] = {}
         else:
             # save bjointsp's placement & routing in flow state/metadata
             # placement: SF name --> SF placement node
@@ -188,7 +189,7 @@ class BJointSPAlgo:
 
         else:
             # process flow here?
-            if flow['placement'][flow.current_sf] == flow.current_node_id:
+            if flow.current_sf in flow['placement'] and flow['placement'][flow.current_sf] == flow.current_node_id:
                 node = state.network['nodes'][flow.current_node_id]
                 demand_p, _ = Placement.calculate_demand(flow, flow.current_sf, node['available_sf'],
                                                          self.simulator.params.sf_list)
@@ -256,24 +257,24 @@ class BJointSPAlgo:
 if __name__ == "__main__":
     # for testing and debugging
     # Simple test params
-    network = 'abilene_11.graphml'
-    args = {
-        'network': f'../../../params/networks/{network}',
-        'service_functions': '../../../params/services/3sfcs.yaml',
-        'config': '../../../params/config/simple_config.yaml',
-        'seed': 9999,
-        'output_path': f'bjointsp-out/{network}'
-    }
-
-    # Evaluation params
-    # network = 'dfn_58.graphml'
+    # network = 'abilene_11.graphml'
     # args = {
     #     'network': f'../../../params/networks/{network}',
     #     'service_functions': '../../../params/services/3sfcs.yaml',
-    #     'config': '../../../params/config/hc_0.5.yaml',
+    #     'config': '../../../params/config/simple_config.yaml',
     #     'seed': 9999,
     #     'output_path': f'bjointsp-out/{network}'
     # }
+
+    # Evaluation params
+    network = 'dfn_58.graphml'
+    args = {
+        'network': f'../../../params/networks/{network}',
+        'service_functions': '../../../params/services/3sfcs.yaml',
+        'config': '../../../params/config/hc_0.5.yaml',
+        'seed': 9999,
+        'output_path': f'bjointsp-out/{network}'
+    }
 
     # Setup logging to screen
     logging.basicConfig(level=logging.INFO)
@@ -283,7 +284,7 @@ if __name__ == "__main__":
     simulator = Simulator(test_mode=True)
 
     # Setup algorithm
-    algo = BJointSPAlgo(simulator, recalc_before_drop=True)
+    algo = BJointSPAlgo(simulator, recalc_before_drop=False)
     algo.init(os.path.abspath(args['network']), os.path.abspath(args['service_functions']),
               os.path.abspath(args['config']), args['seed'], args['output_path'])
     # Execute orchestrated simulation
