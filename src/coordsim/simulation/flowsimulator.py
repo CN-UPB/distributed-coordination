@@ -460,6 +460,10 @@ class FlowSimulator:
         This function concentrates actions that need to be carried out when dropping a flow. At the moment
         there is no real advantage in this outsourcing, but future version might introduce more actions.
         """
+        if flow['state'] == 'dropped':
+            log.info(f'Flow {flow.flow_id} was dropped already. Not dropping again.')
+            return
+
         # Update metrics for the dropped flow
         self.metrics.dropped_flow(flow)
         self.metrics.add_end2end_delay_of_dropped_flows(flow.end2end_delay)

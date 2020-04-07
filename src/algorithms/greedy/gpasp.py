@@ -276,13 +276,13 @@ class GPASPAlgo:
 if __name__ == "__main__":
     # for testing and debugging
     # Simple test params
-    network = 'abilene_11.graphml'
+    network = 'dfn_58.graphml'
     args = {
         'network': f'../../../params/networks/{network}',
         'service_functions': '../../../params/services/3sfcs.yaml',
-        'config': '../../../params/config/simple_config.yaml',
+        'config': '../../../params/config/llc_0.5.yaml',
         'seed': 9999,
-        'output_path': f'gpasp-out/{network}'
+        'output_path': f'tmp-out/{network}'
     }
 
     # Setup logging to screen
