@@ -469,7 +469,7 @@ class FlowSimulator:
         # assert flow['state'] == 'drop', f'Algorithm has not foreseen drop of flow {flow.flow_id}'
         if 'state' in flow.user_data.keys():
             if flow['state'] != 'drop':
-                print(f'Algorithm has not foreseen drop of flow {flow.flow_id}')
+                log.warning(f'Algorithm has not foreseen drop of flow {flow.flow_id}')
 
             if 'drop_flow' in self.params.interception_callbacks:
                 self.params.interception_callbacks['drop_flow'](flow)

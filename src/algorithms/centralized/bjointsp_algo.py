@@ -125,8 +125,13 @@ class BJointSPAlgo:
                                 networkx=self.simulator.network, networkx_cap='remaining_cap', write_result=False,
                                 print_best=False)
         if result is None:
-            log.warning(f"Could not compute placement & routing for flow {flow.flow_id}.")
+            log.warning(f"Could not compute placement & routing for flow {flow.flow_id}. Dropping it.")
+            flow['state'] = 'drop'
             flow['placement'] = {}
+            flow['routing'] = {}
+            # clear rules belonging to flow
+            self.simulator.params.processing_rules[flow.current_node_id].pop(flow.flow_id, None)
+            self.simulator.params.forwarding_rules[flow.current_node_id].pop(flow.flow_id, None)
         else:
             # save bjointsp's placement & routing in flow state/metadata
             # placement: SF name --> SF placement node
@@ -171,7 +176,8 @@ class BJointSPAlgo:
             # stop at the current SF
             if sf == flow.current_sf:
                 return
-            flow['routing'][flow.current_sf].update(flow['routing'][sf])
+            if flow.current_sf in flow['routing']:
+                flow['routing'][flow.current_sf].update(flow['routing'][sf])
 
     def pass_flow(self, flow):
         """
@@ -224,6 +230,11 @@ class BJointSPAlgo:
         """
         Forward flow according to saved path. If not possible due to congestion, drop flow.
         """
+        if flow.current_sf not in flow['routing'] or flow.current_node_id not in flow['routing'][flow.current_sf]:
+            log.warning(f'Dropping flow {flow.flow_id} because it is missing routing information. Maybe on purpose?')
+            flow['state'] = 'drop'
+            return
+
         next_neighbor_id = flow['routing'][flow.current_sf][flow.current_node_id]
         edge = self.simulator.params.network[flow.current_node_id][next_neighbor_id]
 
@@ -271,7 +282,7 @@ if __name__ == "__main__":
     args = {
         'network': f'../../../params/networks/{network}',
         'service_functions': '../../../params/services/3sfcs.yaml',
-        'config': '../../../params/config/hc_0.5.yaml',
+        'config': '../../../params/config/llc_0.5.yaml',
         'seed': 9999,
         'output_path': f'bjointsp-out/{network}'
     }
