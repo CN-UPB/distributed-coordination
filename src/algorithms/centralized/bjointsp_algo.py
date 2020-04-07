@@ -130,8 +130,8 @@ class BJointSPAlgo:
             flow['placement'] = {}
             flow['routing'] = {}
             # clear rules belonging to flow
-            self.simulator.params.processing_rules[flow.current_node_id].pop(flow.flow_id, None)
-            self.simulator.params.forwarding_rules[flow.current_node_id].pop(flow.flow_id, None)
+            self.simulator.params.flow_processing_rules[flow.current_node_id].pop(flow.flow_id, None)
+            self.simulator.params.flow_forwarding_rules[flow.current_node_id].pop(flow.flow_id, None)
         else:
             # save bjointsp's placement & routing in flow state/metadata
             # placement: SF name --> SF placement node
