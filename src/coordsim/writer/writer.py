@@ -177,7 +177,7 @@ class ResultWriter():
                 data['dec_time_std'].append(np.std(times))
         # create df and write to csv
         df = pd.DataFrame(data=data)
-        df.to_csv(self.agg_decisions_file_name)
+        df.to_csv(self.agg_decisions_file_name, index=False)
 
     def close_streams(self):
         """
