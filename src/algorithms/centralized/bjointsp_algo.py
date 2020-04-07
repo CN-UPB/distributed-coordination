@@ -82,6 +82,7 @@ class BJointSPAlgo:
         self.simulator.apply(action)
         log.info(f'Start simulation at: {datetime.now().strftime("%H-%M-%S")}')
         self.simulator.run()
+        self.simulator.write_state()
         log.info(f'End simulation at: {datetime.now().strftime("%H-%M-%S")}')
         log.info(f'Network Stats after run(): {self.simulator.get_state().network_stats}')
         log.info(f"Writing aggregated decisions to {self.simulator.writer.agg_decisions_file_name}")
@@ -268,24 +269,24 @@ class BJointSPAlgo:
 if __name__ == "__main__":
     # for testing and debugging
     # Simple test params
-    # network = 'abilene_11.graphml'
-    # args = {
-    #     'network': f'../../../params/networks/{network}',
-    #     'service_functions': '../../../params/services/3sfcs.yaml',
-    #     'config': '../../../params/config/simple_config.yaml',
-    #     'seed': 9999,
-    #     'output_path': f'bjointsp-out/{network}'
-    # }
-
-    # Evaluation params
-    network = 'dfn_58.graphml'
+    network = 'abilene_11.graphml'
     args = {
         'network': f'../../../params/networks/{network}',
         'service_functions': '../../../params/services/3sfcs.yaml',
-        'config': '../../../params/config/llc_0.5.yaml',
+        'config': '../../../params/config/simple_config.yaml',
         'seed': 9999,
         'output_path': f'bjointsp-out/{network}'
     }
+
+    # Evaluation params
+    # network = 'dfn_58.graphml'
+    # args = {
+    #     'network': f'../../../params/networks/{network}',
+    #     'service_functions': '../../../params/services/3sfcs.yaml',
+    #     'config': '../../../params/config/llc_0.5.yaml',
+    #     'seed': 9999,
+    #     'output_path': f'bjointsp-out/{network}'
+    # }
 
     # Setup logging to screen
     logging.basicConfig(level=logging.INFO)
