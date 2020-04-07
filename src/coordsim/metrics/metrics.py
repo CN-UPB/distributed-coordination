@@ -119,7 +119,7 @@ class MetricStore:
         self['total_active_flows'] -= 1
         assert self['total_active_flows'] >= 0, "Cannot have negative active flows"
         self['graveyard'][flow.current_node_id] += 1
-        flow['state'] = 'dropped'
+        flow.dropped = True
 
     def add_sf_processing_delay(self, delay):
         self['num_sf_processing_delays'] += 1
