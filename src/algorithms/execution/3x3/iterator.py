@@ -12,15 +12,15 @@ def main():
     pparallel = int(sys.argv[3])
     poll_pause = int(sys.argv[4])
 
-    # scenarios = ['llc', 'lnc', 'hc']
+    scenarios = ['llc', 'lnc', 'hc']
     # networks = ['../../../../params/networks/bics_34.graphml', '../../../../params/networks/dfn_58.graphml',
     #             '../../../../params/networks/intellifiber_73.graphml']
     # ingress = ['0.1', '0.15', '0.2', '0.25', '0.3', '0.35', '0.4', '0.45', '0.5']
     # algos = ['gpasp', 'spr1', 'spr2']
-    scenarios = ['hc']
+    # scenarios = ['hc']
     networks = ['../../../../params/networks/dfn_58.graphml']
-    ingress = ['0.4']
-    # ingress = ['0.1', '0.2', '0.3', '0.4', '0.5']
+    # ingress = ['0.4']
+    ingress = ['0.1', '0.2', '0.3', '0.4', '0.5']
     # algos = ['gpasp', 'spr2', 'bjointsp', 'bjointsp_recalc']
     algos = ['bjointsp', 'bjointsp_recalc']
 
