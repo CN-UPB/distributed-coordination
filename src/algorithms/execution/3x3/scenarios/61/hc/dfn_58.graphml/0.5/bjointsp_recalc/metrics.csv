@@ -1,0 +1,3 @@
+time,total_flows,successful_flows,dropped_flows,in_network_flows,avg_end2end_delay_of_dropped_flows,avg_end2end_delay_of_processed_flows,avg_sf_processing_delay,avg_sfc_length,avg_crossed_link_delay,avg_path_delay,avg_path_delay_of_processed_flows,avg_ingress_2_egress_path_delay_of_processed_flows,avg_node_load,avg_link_load
+0,26,0,0,26,0,0,0,2.769230769230769,0,0.0,0,0,0.0,0.0
+100,607,293,10,304,40.30975801151711,43.56523924119433,4.935351140725274,2.6935749588138385,5.672088724584103,25.27677100494234,30.638225255972696,14.569965870307167,0.5387282545214291,0.16155898790003978
