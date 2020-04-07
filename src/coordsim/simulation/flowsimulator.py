@@ -281,12 +281,10 @@ class FlowSimulator:
                             f'Dropping flow!')
                 log.warning(ex)
                 self.drop_flow(flow)
-                self.env.exit()
         else:
             # Next node could not determined: drop flow
             log.warning(f'Flow {flow.flow_id}: Forwarding rule not found at {flow.current_node_id}. Dropping flow!')
             self.drop_flow(flow)
-            self.env.exit()
 
     def forward_flow_to_neighbor(self, flow, neighbor_id):
         '''
