@@ -1,2 +1,0 @@
---editable git://github.com/RealVNF/common-utils#egg=coord-interface
---editable .
