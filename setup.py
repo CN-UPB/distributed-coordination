@@ -1,4 +1,10 @@
+import os
 from setuptools import setup, find_packages
+
+# install packages on GitHub
+os.system('pip install git+https://github.com/RealVNF/common-utils')
+os.system('pip install git+https://github.com/CN-UPB/B-JointSP.git')
+
 requirements = [
     'simpy',
     'networkx==2.3',

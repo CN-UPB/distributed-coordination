@@ -24,15 +24,13 @@ Simulate flow-level, inter-node network coordination including scaling and place
 
 Requires Python 3.6. Install with [virtualenv](https://virtualenv.pypa.io/en/stable/) to not break original coord-sim installation. Make sure to install simulator with adapted source files, located on the default `adapted` branch:
 
-Install dependency [`common-utils`](https://github.com/RealVNF/common-utils).
+Depends on [`common-utils`](https://github.com/RealVNF/common-utils) and [B-JointSP](https://github.com/CN-UPB/B-JointSP) for centralized placement.
 
-Then follow original setup procedure:
+All dependencies can be installed with: 
+
 ```bash
-pip install -r requirements.txt
+python setup.py install
 ```
-
-If you want to use the global B-JointSP algorithm as comparison, you also need to install it: 
-[B-JointSP](https://github.com/CN-UPB/B-JointSP)
 
 For evaluation, also install these dependencies:
 
