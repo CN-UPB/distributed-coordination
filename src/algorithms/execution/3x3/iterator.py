@@ -17,7 +17,7 @@ def main():
     #             '../../../../params/networks/intellifiber_73.graphml']
     # ingress = ['0.1', '0.15', '0.2', '0.25', '0.3', '0.35', '0.4', '0.45', '0.5']
     # algos = ['gpasp', 'spr1', 'spr2']
-    scenarios = ['llc']
+    scenarios = ['hc']
     networks = ['../../../../params/networks/dfn_58.graphml']
     # ingress = ['0.1']
     ingress = ['0.1', '0.2', '0.3', '0.4', '0.5']
