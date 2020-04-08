@@ -269,24 +269,24 @@ class BJointSPAlgo:
 if __name__ == "__main__":
     # for testing and debugging
     # Simple test params
-    network = 'abilene_11.graphml'
-    args = {
-        'network': f'../../../params/networks/{network}',
-        'service_functions': '../../../params/services/3sfcs.yaml',
-        'config': '../../../params/config/simple_config.yaml',
-        'seed': 9999,
-        'output_path': f'bjointsp-out/{network}'
-    }
-
-    # Evaluation params
-    # network = 'dfn_58.graphml'
+    # network = 'abilene_11.graphml'
     # args = {
     #     'network': f'../../../params/networks/{network}',
     #     'service_functions': '../../../params/services/3sfcs.yaml',
-    #     'config': '../../../params/config/llc_0.5.yaml',
-    #     'seed': 9999,
-    #     'output_path': f'bjointsp-out/{network}'
+    #     'config': '../../../params/config/simple_config.yaml',
+    #     'seed': 70,
+    #     'output_path': f'out/{network}'
     # }
+
+    # Evaluation params
+    network = 'dfn_58.graphml'
+    args = {
+        'network': f'../../../params/networks/{network}',
+        'service_functions': '../../../params/services/3sfcs.yaml',
+        'config': '../../../params/config/lnc_0.5.yaml',
+        'seed': 70,
+        'output_path': f'out/{network}'
+    }
 
     # Setup logging to screen
     logging.basicConfig(level=logging.INFO)
@@ -296,7 +296,7 @@ if __name__ == "__main__":
     simulator = Simulator(test_mode=True)
 
     # Setup algorithm
-    algo = BJointSPAlgo(simulator, recalc_before_drop=False)
+    algo = BJointSPAlgo(simulator, recalc_before_drop=True)
     algo.init(os.path.abspath(args['network']), os.path.abspath(args['service_functions']),
               os.path.abspath(args['config']), args['seed'], args['output_path'])
     # Execute orchestrated simulation
