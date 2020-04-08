@@ -23,8 +23,8 @@ scenarios = ['hc', 'lnc', 'llc']
 networks = ['dfn_58.graphml']
 ingress = ['0.1', '0.2', '0.3', '0.4', '0.5']
 # ingress = ['0.1']
-algos = ['gpasp', 'spr2', 'bjointsp', 'bjointsp_recalc']
-metric_sets = {'flow': ['total_flows', 'successful_flows', 'dropped_flows', 'in_network_flows'],
+algos = ['gpasp', 'spr1', 'spr2']
+metric_sets = {'flow': ['total_flows', 'successful_flows', 'dropped_flows', 'in_network_flows', 'perc_successful_flows'],
                'delay': ['avg_end2end_delay_of_processed_flows']}
 
 
@@ -54,6 +54,24 @@ def collect_data():
                     for a in algos:
                         data[r][s][net][ing][a] = get_last_row(
                             read_output_file(f'scenarios/{r}/{s}/{net}/{ing}/{a}/metrics.csv'))
+    return data
+
+
+def calc_percent_successful_flows(data):
+    """Reading the successful and dropped flows, calculate the percent of successful flows. Ignore in-network flows."""
+    for r in runs:
+        for s in scenarios:
+            for net in networks:
+                for ing in ingress:
+                    for a in algos:
+                        # calc percentage: succ / (succ + dropped); ignore in network here
+                        perc_succ = 0
+                        succ = int(data[r][s][net][ing][a][metrics2index['successful_flows']])
+                        dropped = int(data[r][s][net][ing][a][metrics2index['dropped_flows']])
+                        if succ + dropped > 0:
+                            perc_succ = succ / (succ + dropped)
+                        # append to data
+                        data[r][s][net][ing][a].append(perc_succ)
     return data
 
 
@@ -106,9 +124,10 @@ def transform_data_confidence_intervall(data, metric_set, metric_set_id):
 
 def main():
     data = collect_data()
-    avg_data = average_data(data)
+    # avg_data = average_data(data)
+    data = calc_percent_successful_flows(data)
     for key, value in metric_sets.items():
-        transform_data(avg_data, value, key)
+        # transform_data(avg_data, value, key)
         transform_data_confidence_intervall(data, value, key)
     print('')
 
