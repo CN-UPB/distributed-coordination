@@ -283,7 +283,7 @@ if __name__ == "__main__":
     args = {
         'network': f'../../../params/networks/{network}',
         'service_functions': '../../../params/services/3sfcs.yaml',
-        'config': '../../../params/config/lnc_0.5.yaml',
+        'config': '../../../params/config/llc_0.5.yaml',
         'seed': 70,
         'output_path': f'out/{network}'
     }
