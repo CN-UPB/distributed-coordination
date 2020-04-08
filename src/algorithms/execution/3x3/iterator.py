@@ -22,7 +22,7 @@ def main():
     # ingress = ['0.4']
     ingress = ['0.1', '0.2', '0.3', '0.4', '0.5']
     # algos = ['gpasp', 'spr2', 'bjointsp', 'bjointsp_recalc']
-    algos = ['bjointsp']
+    algos = ['bjointsp_recalc']
 
     running_processes = []
     for r in runs:
