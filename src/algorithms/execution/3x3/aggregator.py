@@ -19,7 +19,7 @@ metric_sets = settings.metric_sets
 metrics2index = settings.metrics2index
 
 # Custom settings
-scenarios = ['hc']
+scenarios = ['hc', 'lnc', 'llc']
 networks = ['dfn_58.graphml']
 ingress = ['0.1', '0.2', '0.3', '0.4', '0.5']
 # ingress = ['0.1']
