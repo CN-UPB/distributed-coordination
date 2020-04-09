@@ -20,7 +20,7 @@ class BJointSPAlgo:
     Then just forward and execute.
     """
 
-    def __init__(self, simulator: Simulator, recalc_before_drop=False):
+    def __init__(self, simulator: Simulator, recalc_before_drop=False, logging_level=None):
         """
         Create B-JointSP algo object.
         @param simulator: Simulator reference to query all needed information
@@ -33,6 +33,8 @@ class BJointSPAlgo:
         self.sfc_templates = self.load_sfc_templates()
         self.sfs = self.load_sfs(self.sfc_templates)
         self.recalc_before_drop = recalc_before_drop
+        self.logging_level = logging_level
+
 
     def load_sfc_templates(self):
         """Load and return dict with SFC templates for B-JointSP"""
@@ -124,7 +126,7 @@ class BJointSPAlgo:
         sink = self.create_sink_list(flow)
         result = bjointsp_place(self.network_path, template, source, source_template_object=True, fixed_vnfs=sink,
                                 networkx=self.simulator.network, networkx_cap='remaining_cap', write_result=False,
-                                print_best=False)
+                                print_best=False, logging_level=self.logging_level)
         if result is None:
             log.warning(f"Could not compute placement & routing for flow {flow.flow_id}. Dropping it.")
             flow['state'] = 'drop'
@@ -269,24 +271,24 @@ class BJointSPAlgo:
 if __name__ == "__main__":
     # for testing and debugging
     # Simple test params
-    # network = 'abilene_11.graphml'
-    # args = {
-    #     'network': f'../../../params/networks/{network}',
-    #     'service_functions': '../../../params/services/3sfcs.yaml',
-    #     'config': '../../../params/config/simple_config.yaml',
-    #     'seed': 70,
-    #     'output_path': f'out/{network}'
-    # }
-
-    # Evaluation params
-    network = 'dfn_58.graphml'
+    network = 'abilene_11.graphml'
     args = {
         'network': f'../../../params/networks/{network}',
         'service_functions': '../../../params/services/3sfcs.yaml',
-        'config': '../../../params/config/llc_0.5.yaml',
+        'config': '../../../params/config/simple_config.yaml',
         'seed': 70,
         'output_path': f'out/{network}'
     }
+
+    # Evaluation params
+    # network = 'dfn_58.graphml'
+    # args = {
+    #     'network': f'../../../params/networks/{network}',
+    #     'service_functions': '../../../params/services/3sfcs.yaml',
+    #     'config': '../../../params/config/llc_0.5.yaml',
+    #     'seed': 70,
+    #     'output_path': f'out/{network}'
+    # }
 
     # Setup logging to screen
     logging.basicConfig(level=logging.INFO)
@@ -296,7 +298,7 @@ if __name__ == "__main__":
     simulator = Simulator(test_mode=True)
 
     # Setup algorithm
-    algo = BJointSPAlgo(simulator, recalc_before_drop=True)
+    algo = BJointSPAlgo(simulator, recalc_before_drop=True, logging_level=None)
     algo.init(os.path.abspath(args['network']), os.path.abspath(args['service_functions']),
               os.path.abspath(args['config']), args['seed'], args['output_path'])
     # Execute orchestrated simulation
