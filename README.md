@@ -49,6 +49,7 @@ Due to the use of deprecated networkx functions and their removal in the 2.4 ver
 * Then call `python iterator.py start_run end_run num_parallel poll_pause` to run experiments.
 * For example `python iterator.py 50 55 4 5` will run 6 repetitions (ID 50-55) on 4 cores, polling every 5s if a core is free.
 * The results are saved in the subfolder `scenarios` according to run ID, config, algorithm, etc.
+* *Attention:* `python iterator.py` silently overwrites existing results!
 
 ## Evaluation of Results
 
