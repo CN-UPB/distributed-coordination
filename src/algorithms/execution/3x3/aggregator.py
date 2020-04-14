@@ -52,8 +52,12 @@ def collect_data():
                 for ing in ingress:
                     data[r][s][net][ing] = {}
                     for a in algos:
-                        data[r][s][net][ing][a] = get_last_row(
-                            read_output_file(f'scenarios/{r}/{s}/{net}/{ing}/{a}/metrics.csv'))
+                        last_row = get_last_row(read_output_file(f'scenarios/{r}/{s}/{net}/{ing}/{a}/metrics.csv'))
+                        if last_row[0] == '1000':
+                            data[r][s][net][ing][a] = last_row
+                        else:
+                            print(f'Experiment {r}/{s}/{net}/{ing}/{a} did not complete. Last time is {last_row[0]} '
+                                  f'instead of 1000. Skipping...')
     return data
 
 
@@ -64,14 +68,15 @@ def calc_percent_successful_flows(data):
             for net in networks:
                 for ing in ingress:
                     for a in algos:
-                        # calc percentage: succ / (succ + dropped); ignore in network here
-                        perc_succ = 0
-                        succ = int(data[r][s][net][ing][a][metrics2index['successful_flows']])
-                        dropped = int(data[r][s][net][ing][a][metrics2index['dropped_flows']])
-                        if succ + dropped > 0:
-                            perc_succ = succ / (succ + dropped)
-                        # append to data
-                        data[r][s][net][ing][a].append(perc_succ)
+                        if r in data and s in data[r] and net in data[r][s] and ing in data[r][s][net] and a in data[r][s][net][ing]:
+                            # calc percentage: succ / (succ + dropped); ignore in network here
+                            perc_succ = 0
+                            succ = int(data[r][s][net][ing][a][metrics2index['successful_flows']])
+                            dropped = int(data[r][s][net][ing][a][metrics2index['dropped_flows']])
+                            if succ + dropped > 0:
+                                perc_succ = succ / (succ + dropped)
+                            # append to data
+                            data[r][s][net][ing][a].append(perc_succ)
     return data
 
 
@@ -116,10 +121,11 @@ def transform_data_confidence_intervall(data, metric_set, metric_set_id):
                 for r in runs:
                     for a in algos:
                         for ing in ingress:
-                            for m in metric_set:
-                                # x(ing), y(value), hue(metric), style(algo)
-                                row = [ing, data[r][s][net][ing][a][metrics2index[m]], f'{m}', f'{a}']
-                                writer.writerow(row)
+                            if r in data and s in data[r] and net in data[r][s] and ing in data[r][s][net] and a in data[r][s][net][ing]:
+                                for m in metric_set:
+                                    # x(ing), y(value), hue(metric), style(algo)
+                                    row = [ing, data[r][s][net][ing][a][metrics2index[m]], f'{m}', f'{a}']
+                                    writer.writerow(row)
 
 
 def main():

@@ -271,24 +271,24 @@ class BJointSPAlgo:
 if __name__ == "__main__":
     # for testing and debugging
     # Simple test params
-    network = 'abilene_11.graphml'
-    args = {
-        'network': f'../../../params/networks/{network}',
-        'service_functions': '../../../params/services/3sfcs.yaml',
-        'config': '../../../params/config/simple_config.yaml',
-        'seed': 70,
-        'output_path': f'out/{network}'
-    }
-
-    # Evaluation params
-    # network = 'dfn_58.graphml'
+    # network = 'abilene_11.graphml'
     # args = {
     #     'network': f'../../../params/networks/{network}',
     #     'service_functions': '../../../params/services/3sfcs.yaml',
-    #     'config': '../../../params/config/llc_0.5.yaml',
+    #     'config': '../../../params/config/simple_config.yaml',
     #     'seed': 70,
     #     'output_path': f'out/{network}'
     # }
+
+    # Evaluation params
+    network = 'dfn_58.graphml'
+    args = {
+        'network': f'../../../params/networks/{network}',
+        'service_functions': '../../../params/services/3sfcs.yaml',
+        'config': '../../../params/config/hc_0.5.yaml',
+        'seed': 155,
+        'output_path': f'out/{network}'
+    }
 
     # Setup logging to screen
     logging.basicConfig(level=logging.INFO)
