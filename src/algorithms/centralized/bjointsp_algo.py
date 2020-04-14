@@ -20,11 +20,13 @@ class BJointSPAlgo:
     Then just forward and execute.
     """
 
-    def __init__(self, simulator: Simulator, recalc_before_drop=False, logging_level=None):
+    def __init__(self, simulator: Simulator, recalc_before_drop=False, max_recalc=10, logging_level=None):
         """
         Create B-JointSP algo object.
         @param simulator: Simulator reference to query all needed information
         @param recalc_before_drop: Whether or not to recalculate placement and routing (by calling B-JointSP again)
+        @param max_recalc: Max. number of recalculations per flow before dropping it. Only if recalc_before_drop is true
+        @param logging_level: Configured logging level for writing logs with B-JointSP. None=no logs
         for a flow that is about to be dropped due to lack of node resources. Default: False
         """
         self.simulator = simulator
@@ -33,8 +35,8 @@ class BJointSPAlgo:
         self.sfc_templates = self.load_sfc_templates()
         self.sfs = self.load_sfs(self.sfc_templates)
         self.recalc_before_drop = recalc_before_drop
+        self.max_recalc = max_recalc
         self.logging_level = logging_level
-
 
     def load_sfc_templates(self):
         """Load and return dict with SFC templates for B-JointSP"""
@@ -76,6 +78,7 @@ class BJointSPAlgo:
         # decision in case of bjointsp = "init_flow". flow id --> (node id --> list of times)
         # attention: needs lots of memory when running long!
         self.decision_times = defaultdict(lambda: defaultdict(list))
+        self.recalc_counter = defaultdict(int)
 
     def run(self):
         action = ExtendedSimulatorAction(placement=defaultdict(list), scheduling={}, 
@@ -214,14 +217,21 @@ class BJointSPAlgo:
                 else:
                     log.warning(f"Not enough resources at {flow.current_node_id} to process flow {flow.flow_id}.")
                     if self.recalc_before_drop:
-                        log.info(f"Recalculating placement and routing for flow {flow.flow_id} with B-JointSP.")
-                        # remove existing rules for the flow
-                        state = self.remove_rules(flow, state)
-                        # call bjointsp and recalculate placement and routing and pass flow again
-                        self.init_flow(flow)
-                        # set routing rules to get to next SF
-                        self.routing_to_sf(flow)
-                        self.pass_flow(flow)
+                        # limit recalcs to avoid endless recalc if there are not enough resources available
+                        if self.recalc_counter[flow.flow_id] < self.max_recalc:
+                            self.recalc_counter[flow.flow_id] += 1
+                            log.info(f"Recalculating placement and routing for flow {flow.flow_id} with B-JointSP "
+                                     f"({self.recalc_counter[flow.flow_id]}/{self.max_recalc}).")
+                            # remove existing rules for the flow
+                            state = self.remove_rules(flow, state)
+                            # call bjointsp and recalculate placement and routing and pass flow again
+                            self.init_flow(flow)
+                            # set routing rules to get to next SF
+                            self.routing_to_sf(flow)
+                            self.pass_flow(flow)
+                        else:
+                            log.warning(f"Recalculated {self.max_recalc} times. Dropping flow {flow.flow_id} now.")
+                            flow['state'] = 'drop'
 
             # else forward flow
             else:
@@ -298,7 +308,7 @@ if __name__ == "__main__":
     simulator = Simulator(test_mode=True)
 
     # Setup algorithm
-    algo = BJointSPAlgo(simulator, recalc_before_drop=True, logging_level=None)
+    algo = BJointSPAlgo(simulator, recalc_before_drop=True, logging_level=logging.INFO)
     algo.init(os.path.abspath(args['network']), os.path.abspath(args['service_functions']),
               os.path.abspath(args['config']), args['seed'], args['output_path'])
     # Execute orchestrated simulation
