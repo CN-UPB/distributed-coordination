@@ -14,8 +14,12 @@ metrics2index = settings.metrics2index
 
 
 # Custom settings
-config = ['hc_0.3+']
-networks = ['gts_ce_149.graphml']
+runs = [str(x) for x in range(0, 50)]
+# config = ['hc_0.3+']
+config = ['hc', 'lnc']
+# networks = ['gts_ce_149.graphml']
+networks = ['dfn_58.graphml']
+ing = '0.4'
 # algos = ['gpasp', 'spr1', 'spr2']
 algos = ['gpasp', 'spr2']
 metric_sets = {'flow': ['total_flows', 'successful_flows', 'dropped_flows', 'in_network_flows', 'perc_successful_flows'],
@@ -44,7 +48,9 @@ def collect_data():
             for net in networks:
                 data[c][r][net] = {}
                 for a in algos:
-                    data[c][r][net][a] = remove_first(read_output_file(f'scenarios/{c}/{r}/{net}/{a}/metrics.csv'))
+                    # data[c][r][net][a] = remove_first(read_output_file(f'scenarios/{c}/{r}/{net}/{a}/metrics.csv'))
+                    # for reading 3x3 data, which is structured differently
+                    data[c][r][net][a] = remove_first(read_output_file(f'../3x3/scenarios/{r}/{c}/{net}/{ing}/{a}/metrics.csv'))
     return data
 
 
@@ -57,7 +63,7 @@ def collect_data_decisions():
             for net in networks:
                 data[c][r][net] = {}
                 for a in algos:
-                    data[c][r][net][a] = remove_first(read_output_file(f'scenarios/{c}/{r}/{net}/{a}/decisions.csv'))
+                    data[c][r][net][a] = remove_first(read_output_file(f'scenario/{c}/{r}/{net}/{a}/decisions.csv'))
     return data
 
 
@@ -90,7 +96,7 @@ def collect_data_runs(rconfig, rruns, rnetworks, ring):
                 data[c][r][net] = {}
                 for a in algos:
                     data[c][r][net][a] = remove_first(
-                        read_output_file(f'scenarios/{r}/{c}/{net}/{ring}/{a}/metrics.csv'))
+                        read_output_file(f'scenario/{r}/{c}/{net}/{ring}/{a}/metrics.csv'))
     return data
 
 #Deprecated
