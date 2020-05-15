@@ -5,11 +5,6 @@ import importlib
 
 settings = importlib.import_module('algorithms.execution.3x3.settings')
 
-# eg, 0 49
-start = int(sys.argv[1])
-end = int(sys.argv[2]) + 1
-runs = [str(x) for x in range(start, end)]
-
 # Sync settings
 scenarios = settings.scenarios
 networks = settings.networks
@@ -19,13 +14,16 @@ metric_sets = settings.metric_sets
 metrics2index = settings.metrics2index
 
 # Custom settings
+runs = [str(x) for x in range(0, 50)]
 scenarios = ['hc', 'lnc']
 networks = ['dfn_58.graphml']
 ingress = ['0.1', '0.2', '0.3', '0.4', '0.5']
 # ingress = ['0.1']
-algos = ['bjointsp', 'bjointsp_recalc']
+algos = ['gpasp', 'spr2']
+# algos = ['bjointsp', 'bjointsp_recalc']
 metric_sets = {'flow': ['total_flows', 'successful_flows', 'dropped_flows', 'in_network_flows', 'perc_successful_flows'],
-               'delay': ['avg_end2end_delay_of_processed_flows']}
+               'delay': ['avg_end2end_delay_of_processed_flows'],
+               'load': ['avg_node_load', 'avg_link_load']}
 
 
 def read_output_file(path):
