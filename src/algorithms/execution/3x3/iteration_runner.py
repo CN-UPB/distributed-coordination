@@ -1,16 +1,18 @@
 import sys
 import logging
 import os
-
 from siminterface.simulator import Simulator
 from algorithms.greedy.gpasp import GPASPAlgo
 from algorithms.score.spr1 import SPR1Algo
 from algorithms.score.spr2 import SPR2Algo
+from algorithms.prototypes.random.random_walk import RWAlgo
+from algorithms.centralized.bjointsp_algo import BJointSPAlgo
 
 log = logging.getLogger(__name__)
 
 
 def main():
+    # eg: python iteraton_runner.py 50 lnc ../../../../params/networks/dfn_58.graphml 0.1 gpasp
     run = sys.argv[1]
     scenario = sys.argv[2]
     network_path = sys.argv[3]
@@ -31,6 +33,7 @@ def main():
 
     logging.getLogger('coordsim').setLevel(logging.CRITICAL)
     logging.getLogger('coordsim.reader').setLevel(logging.CRITICAL)
+    logging.getLogger('algorithms.centralized.bjointsp').setLevel(logging.WARNING)
 
     simulator = Simulator(test_mode=True)
 
@@ -42,6 +45,12 @@ def main():
         algo = SPR1Algo(simulator)
     elif algo_id == 'spr2':
         algo = SPR2Algo(simulator)
+    elif algo_id == 'random':
+        algo = RWAlgo(simulator)
+    elif algo_id == 'bjointsp':
+        algo = BJointSPAlgo(simulator, recalc_before_drop=False, logging_level=None)
+    elif algo_id == 'bjointsp_recalc':
+        algo = BJointSPAlgo(simulator, recalc_before_drop=True, logging_level=None)
 
     algo.init(os.path.abspath(args['network']),
               os.path.abspath(args['service_functions']),

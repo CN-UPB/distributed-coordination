@@ -3,7 +3,7 @@ networks = ['bics_34.graphml', 'dfn_58.graphml', 'intellifiber_73.graphml']
 ingress = ['0.1', '0.15', '0.2', '0.25', '0.3', '0.35', '0.4', '0.45', '0.5']
 algos = ['gpasp', 'spr1', 'spr2']
 
-metric_sets = {'flow': ['total_flows', 'successful_flows', 'dropped_flows', 'in_network_flows'],
+metric_sets = {'flow': ['total_flows', 'successful_flows', 'dropped_flows', 'in_network_flows', 'perc_successful_flows'],
                'delay': ['avg_path_delay_of_processed_flows', 'avg_ingress_2_egress_path_delay_of_processed_flows',
                          'avg_end2end_delay_of_processed_flows'],
                'delay_reduce': ['avg_path_delay_of_processed_flows', 'avg_ingress_2_egress_path_delay_of_processed_flows'],
@@ -24,5 +24,6 @@ metrics2index = {'time': 0,
                  'avg_path_delay_of_processed_flows': 11,
                  'avg_ingress_2_egress_path_delay_of_processed_flows': 12,
                  'avg_node_load': 13,
-                 'avg_link_load': 14
+                 'avg_link_load': 14,
+                 'perc_successful_flows': 15
                  }

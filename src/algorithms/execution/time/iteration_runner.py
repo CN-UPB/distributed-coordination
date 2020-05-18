@@ -5,6 +5,7 @@ from siminterface.simulator import Simulator
 from algorithms.greedy.gpasp import GPASPAlgo
 from algorithms.score.spr1 import SPR1Algo
 from algorithms.score.spr2 import SPR2Algo
+from algorithms.centralized.bjointsp_algo import BJointSPAlgo
 
 import sys
 
@@ -42,6 +43,10 @@ def main():
         algo = SPR1Algo(simulator)
     elif algo_id == 'spr2':
         algo = SPR2Algo(simulator)
+    elif algo_id == 'bjointsp':
+        algo = BJointSPAlgo(simulator, recalc_before_drop=False, logging_level=None)
+    elif algo_id == 'bjointsp_recalc':
+        algo = BJointSPAlgo(simulator, recalc_before_drop=True, logging_level=None)
 
     algo.init(os.path.abspath(args['network']),
               os.path.abspath(args['service_functions']),

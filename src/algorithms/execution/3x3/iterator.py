@@ -1,35 +1,29 @@
 import sys
 import subprocess
 import time
-from datetime import timedelta
-from timeit import default_timer as timer
-from collections import defaultdict
-import os
-import json
-
-# for r in runs:
-#     for s in scenarios:
-#         for net in networks:
-#             for ing in ingress:
-#                 processes = []
-#                 for a in algos:
-#                     processes.append(subprocess.Popen(['python', 'iteration_runner.py', s, r, net, ing, a]))
-#                 for p in processes:
-#                     p.wait()
 
 
 def main():
+    # cli args: start_run end_run num_parallel poll_pause
+    # eg: python iterator.py 50 55 1 5
     start = int(sys.argv[1])
     end = int(sys.argv[2]) + 1
     runs = [str(x) for x in range(start, end)]
     pparallel = int(sys.argv[3])
     poll_pause = int(sys.argv[4])
 
-    scenarios = ['llc', 'lnc', 'hc']
-    networks = ['../../../../params/networks/bics_34.graphml', '../../../../params/networks/dfn_58.graphml',
-                '../../../../params/networks/intellifiber_73.graphml']
-    ingress = ['0.1', '0.15', '0.2', '0.25', '0.3', '0.35', '0.4', '0.45', '0.5']
-    algos = ['gpasp', 'spr1', 'spr2']
+    # scenarios = ['hc', 'lnc']
+    # networks = ['../../../../params/networks/bics_34.graphml', '../../../../params/networks/dfn_58.graphml',
+    #             '../../../../params/networks/intellifiber_73.graphml']
+    # ingress = ['0.1', '0.15', '0.2', '0.25', '0.3', '0.35', '0.4', '0.45', '0.5']
+    # algos = ['gpasp', 'spr1', 'spr2']
+    scenarios = ['hc']
+    # networks = ['../../../../params/networks/dfn_58.graphml']
+    networks = ['../../../../params/networks/gts_ce_149.graphml']
+    ingress = ['0.3']
+    # ingress = ['0.1', '0.2', '0.3', '0.4', '0.5']
+    # algos = ['gpasp', 'spr2', 'bjointsp', 'bjointsp_recalc']
+    algos = ['gpasp']
 
     running_processes = []
     for r in runs:

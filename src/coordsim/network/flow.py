@@ -56,6 +56,8 @@ class Flow:
         self.creation_time = creation_time
         # Flow user data, a dict to hold abitrary data. External algorithms should use this to enrich flow information
         self.user_data = {}
+        # dropped = True, when flow is dropped. used to keep track of dropped flows and avoid dropping twice
+        self.dropped = False
 
     def __setitem__(self, key, item):
         self.user_data[key] = item

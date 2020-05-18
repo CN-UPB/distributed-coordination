@@ -8,14 +8,16 @@ from siminterface.simulator import ExtendedSimulatorAction
 from siminterface.simulator import Simulator
 from auxiliary.link import Link
 from auxiliary.placement import Placement
-from algorithms.greedy.metrics import CustomMetrics
 
 log = logging.getLogger(__name__)
 
 
 class RWAlgo:
     """
-    Random walk algorithm
+    Random walk algorithm:
+    While a flow needs processing, process it locally with 80% probability and forward it to a random neighbor with 20%.
+    After processing, send the flow to its egress along the shortest path.
+    Before/during/after processing avoid saturated links and only drop the flow if all outgoing links are saturated.
     """
     def __init__(self, simulator: Simulator):
         # Besides interaction we need the simulator reference to query all needed information. Not all information can
@@ -111,6 +113,7 @@ class RWAlgo:
                 # no => forward
                 self.forward_flow_random(flow, state)
         elif flow['state'] == 'departure':
+            # send processed flows along shortest path to egress
             if node_id != flow.egress_node_id:
                 self.forward_flow(flow, state)
 
@@ -123,18 +126,11 @@ class RWAlgo:
         self.simulator.apply(state.derive_action())
 
     def forward_flow_random(self, flow, state):
-        """
-        This function will handle the necessary actions to forward a flow from the associated node. A call to this
-        function requires the flow to have a precomputed path. If a flow can be forwarded along th precomputed path
-        the flow_forwarding_rules for the associated node will be set. If a flow cannot be forwarded, due missing link
-        resources, all incident links will be checked and all unsuitable links will be added to the blocked link list
-        of the flow. Subsequent a new path is attempted to calculate.
-        """
-
+        """Forward flow to any randomly chosen neighbor. Skip neighbors to which the link is fully utilized."""
         candidates = []
         for n in self.network_copy.neighbors(flow.current_node_id):
             edge = self.simulator.params.network[flow.current_node_id][n]
-            if (edge['remaining_cap'] >= flow.dr):
+            if edge['remaining_cap'] >= flow.dr:
                 candidates.append(n)
 
         if len(candidates) > 0:
@@ -209,11 +205,11 @@ class RWAlgo:
         """
         <Callback>
         """
-        #self.simulator.write_state()
-        state = self.simulator.get_state()
-
-        log.warning(f'Network Stats after time: {state.simulation_time} / 'f'{state.network_stats} / '
-                    f'{state.network["metrics"]}')
+        self.simulator.write_state()
+        # state = self.simulator.get_state()
+        #
+        # log.warning(f'Network Stats after time: {state.simulation_time} / 'f'{state.network_stats} / '
+        #             f'{state.network["metrics"]}')
 
     def periodic_remove(self):
         """

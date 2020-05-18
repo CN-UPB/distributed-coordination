@@ -14,14 +14,18 @@ metrics2index = settings.metrics2index
 
 
 # Custom settings
-# config = ['hc_0.3']
+runs = [str(x) for x in range(150, 200)]
+# config = ['hc_0.3+']
+config = ['hc', 'lnc']
 # networks = ['gts_ce_149.graphml']
+networks = ['dfn_58.graphml']
+ing = '0.3'
 # algos = ['gpasp', 'spr1', 'spr2']
-# metric_sets = {'flow': ['total_flows', 'successful_flows', 'dropped_flows', 'in_network_flows'],
-#                'flow_1': ['total_flows'],
-#                'delay': ['avg_path_delay_of_processed_flows', 'avg_ingress_2_egress_path_delay_of_processed_flows',
-#                          'avg_end2end_delay_of_processed_flows'],
-#                'load': ['avg_node_load', 'avg_link_load']}
+# algos = ['gpasp', 'spr2']
+algos = ['bjointsp', 'bjointsp_recalc']
+metric_sets = {'flow': ['total_flows', 'successful_flows', 'dropped_flows', 'in_network_flows', 'perc_successful_flows'],
+               'delay': ['avg_end2end_delay_of_processed_flows'],
+               'load': ['avg_node_load', 'avg_link_load']}
 
 
 def read_output_file(path):
@@ -46,7 +50,9 @@ def collect_data():
             for net in networks:
                 data[c][r][net] = {}
                 for a in algos:
-                    data[c][r][net][a] = remove_first(read_output_file(f'scenarios/{c}/{r}/{net}/{a}/metrics.csv'))
+                    # data[c][r][net][a] = remove_first(read_output_file(f'scenarios/{c}/{r}/{net}/{a}/metrics.csv'))
+                    # for reading 3x3 data, which is structured differently
+                    data[c][r][net][a] = remove_first(read_output_file(f'../3x3/scenarios/{r}/{c}/{net}/{ing}/{a}/metrics.csv'))
     return data
 
 
@@ -59,7 +65,25 @@ def collect_data_decisions():
             for net in networks:
                 data[c][r][net] = {}
                 for a in algos:
-                    data[c][r][net][a] = remove_first(read_output_file(f'scenarios/{c}/{r}/{net}/{a}/decisions.csv'))
+                    data[c][r][net][a] = remove_first(read_output_file(f'scenario/{c}/{r}/{net}/{a}/decisions.csv'))
+    return data
+
+
+def calc_percent_successful_flows(data):
+    """Reading the successful and dropped flows, calculate the percent of successful flows. Ignore in-network flows."""
+    for c in config:
+        for r in runs:
+            for net in networks:
+                for a in algos:
+                    for drow in data[c][r][net][a]:
+                        # calc percentage: succ / (succ + dropped); ignore in network here
+                        perc_succ = 0
+                        succ = int(drow[metrics2index['successful_flows']])
+                        dropped = int(drow[metrics2index['dropped_flows']])
+                        if succ + dropped > 0:
+                            perc_succ = succ / (succ + dropped)
+                        # append to data
+                        drow.append(perc_succ)
     return data
 
 
@@ -74,7 +98,7 @@ def collect_data_runs(rconfig, rruns, rnetworks, ring):
                 data[c][r][net] = {}
                 for a in algos:
                     data[c][r][net][a] = remove_first(
-                        read_output_file(f'scenarios/{r}/{c}/{net}/{ring}/{a}/metrics.csv'))
+                        read_output_file(f'scenario/{r}/{c}/{net}/{ring}/{a}/metrics.csv'))
     return data
 
 #Deprecated
@@ -126,10 +150,11 @@ def transform_combine_data_decisions(d_data, data):
 
 def main():
     data = collect_data()
-    d_data = collect_data_decisions()
+    # d_data = collect_data_decisions()
+    data = calc_percent_successful_flows(data)
     for key, value in metric_sets.items():
         transform_data(data, value, key)
-    transform_combine_data_decisions(d_data, data)
+    # transform_combine_data_decisions(d_data, data)
 
     # rdata = collect_data_runs(['hc', 'llc', 'lnc'], [str(x) for x in range(40)],
     #                           ['bics_34.graphml', 'dfn_58.graphml', 'intellifiber_73.graphml'], '0.3')

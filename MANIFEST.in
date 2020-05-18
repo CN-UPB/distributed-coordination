@@ -1,0 +1,1 @@
+include src/algorithms/centralized/service_templates/*.yaml

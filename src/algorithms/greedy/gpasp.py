@@ -1,4 +1,8 @@
+import os
 import random
+import logging
+import time
+
 import networkx as nx
 from collections import defaultdict
 from siminterface.simulator import ExtendedSimulatorAction
@@ -6,6 +10,8 @@ from siminterface.simulator import Simulator
 from auxiliary.link import Link
 from auxiliary.placement import Placement
 from algorithms.greedy.metrics import CustomMetrics
+
+log = logging.getLogger(__name__)
 
 
 class GPASPAlgo:
@@ -39,6 +45,11 @@ class GPASPAlgo:
 
         self.network_copy = self.simulator.get_network_copy()
 
+        # measure decisions
+        # decision in case of bjointsp = "init_flow". flow id --> (node id --> list of times)
+        # attention: needs lots of memory when running long!
+        self.decision_times = defaultdict(lambda: defaultdict(list))
+
     def run(self):
         placement = defaultdict(list)
         processing_rules = defaultdict(lambda : defaultdict(list))
@@ -49,12 +60,15 @@ class GPASPAlgo:
         self.simulator.run()
         self.simulator.write_state()
         self.simulator.write_decisions()
+        log.info(f"Writing aggregated decisions to {self.simulator.writer.agg_decisions_file_name}")
+        self.simulator.writer.write_decision_times(self.decision_times)
 
     def init_flow(self, flow):
         """
         <Callback>
         Called whenever a flow is initialized.
         """
+        start = time.time()
         flow['state'] = 'greedy'
         flow['target_node_id'] = flow.egress_node_id
         flow['blocked_links'] = []
@@ -66,6 +80,10 @@ class GPASPAlgo:
         except nx.NetworkXNoPath:
             flow['state'] = 'drop'
             flow['path'] = []
+        # record decision time
+        decision_time = time.time() - start
+        # all done centrally at one logical global node for Bjointsp
+        self.decision_times[flow.flow_id][flow.current_node_id].append(decision_time)
 
     def pass_flow(self, flow):
         """
@@ -73,7 +91,7 @@ class GPASPAlgo:
         This is the main dynamic logic of the algorithm, whenever a flow is passed to node this function is called.
         The associated node is determined and all actions and information are computed from its perspective.
         """
-
+        start = time.time()
         # Get state information
         state = self.simulator.get_state()
         placement = state.placement
@@ -146,6 +164,11 @@ class GPASPAlgo:
             self.metrics['node_mortality'][node_id] += 1
             processing_rules[node_id].pop(flow.flow_id, None)
             forwarding_rules[node_id].pop(flow.flow_id, None)
+
+        # record decision time
+        decision_time = time.time() - start
+        # all done centrally at one logical global node for Bjointsp
+        self.decision_times[flow.flow_id][flow.current_node_id].append(decision_time)
 
         # Apply state to simulator
         self.simulator.apply(state.derive_action())
@@ -248,3 +271,29 @@ class GPASPAlgo:
         Called to record custom metrics.
         """
         self.metrics.dropped_flow(flow)
+
+
+if __name__ == "__main__":
+    # for testing and debugging
+    # Simple test params
+    network = 'abilene_11.graphml'
+    args = {
+        'network': f'../../../params/networks/{network}',
+        'service_functions': '../../../params/services/3sfcs.yaml',
+        'config': '../../../params/config/simple_config.yaml',
+        'seed': 9999,
+        'output_path': f'out/{network}'
+    }
+
+    # Setup logging to screen
+    logging.basicConfig(level=logging.INFO)
+    logging.getLogger('coordsim').setLevel(logging.INFO)
+    logging.getLogger('coordsim.reader').setLevel(logging.WARNING)
+    simulator = Simulator(test_mode=True)
+
+    # Setup algorithm
+    algo = GPASPAlgo(simulator)
+    algo.init(os.path.abspath(args['network']), os.path.abspath(args['service_functions']),
+              os.path.abspath(args['config']), args['seed'], args['output_path'])
+    # Execute orchestrated simulation
+    algo.run()

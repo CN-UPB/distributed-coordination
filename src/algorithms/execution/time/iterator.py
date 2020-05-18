@@ -6,15 +6,19 @@ from datetime import timedelta
 
 
 def main():
+	# cli args: start_run end_run num_parallel poll_pause
+	# eg: python iterator.py 50 55 1 5
 	start = int(sys.argv[1])
 	end = int(sys.argv[2]) + 1
 	runs = [str(x) for x in range(start, end)]
-	config = [sys.argv[3]]
-	pparallel = int(sys.argv[4])
-	poll_pause = int(sys.argv[5])
+	# config = [sys.argv[3]]
+	config = ['hc_0.3+']
+	pparallel = int(sys.argv[3])
+	poll_pause = int(sys.argv[4])
 
 	networks = ['../../../../params/networks/gts_ce_149.graphml']
-	algos = ['gpasp', 'spr1', 'spr2']
+	# algos = ['gpasp', 'spr1', 'spr2']
+	algos = ['bjointsp', 'bjointsp_recalc']
 
 	start = timer()
 	running_processes = []

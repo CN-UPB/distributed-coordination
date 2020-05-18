@@ -5,6 +5,8 @@ import yaml
 import csv
 import os
 import datetime as dt
+import pandas as pd
+import numpy as np
 from spinterface import SimulatorAction, SimulatorState
 
 
@@ -26,6 +28,7 @@ class ResultWriter():
             self.resources_file_name = f'{self.result_path}/resources.csv'
             self.metrics_file_name = f'{self.result_path}/metrics.csv'
             self.decisions_file_name = f'{self.result_path}/decisions.csv'
+            self.agg_decisions_file_name = f'{self.result_path}/agg_decisions.csv'
 
             # self.result_path = f'{simulator_params["output_id"]}/results/' \
             #     f'{os.path.basename(simulator_params["network"])}/' \
@@ -160,6 +163,21 @@ class ResultWriter():
             decisions_output.append(decisions_output_row)
 
         self.decisions_writer.writerows(decisions_output)
+
+    def write_decision_times(self, decision_times):
+        """New function for writing decision times (avg, std, count) at the end of simulation."""
+        # columns: flow ID, node ID, num decisions, avg decision time, std dev decision time
+        data = {'flow': [], 'node': [], 'dec_count': [], 'dec_time_avg': [], 'dec_time_std': []}
+        for f, node_dict in decision_times.items():
+            for v, times in node_dict.items():
+                data['flow'].append(f)
+                data['node'].append(v)
+                data['dec_count'].append(len(times))
+                data['dec_time_avg'].append(np.mean(times))
+                data['dec_time_std'].append(np.std(times))
+        # create df and write to csv
+        df = pd.DataFrame(data=data)
+        df.to_csv(self.agg_decisions_file_name, index=False)
 
     def close_streams(self):
         """

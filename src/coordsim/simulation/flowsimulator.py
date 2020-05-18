@@ -230,10 +230,10 @@ class FlowSimulator:
                 # Try to process Flow
                 processing_rule = flow_processing_rules[flow.current_node_id][flow.flow_id]
                 if sf in processing_rule:
-                    # Flow has permission to be processed for requested service. Check if service function actually exists
+                    # Flow has permission to be processed for requested service. Check if SF actually exists
                     if sf in self.params.sf_placement[flow.current_node_id]:
                         log.debug(f'Flow {flow.flow_id} STARTED ARRIVING at SF {flow.current_sf} at '
-                                 f'node {flow.current_node_id} for processing. Time: {self.env.now}')
+                                  f'node {flow.current_node_id} for processing. Time: {self.env.now}')
                         yield self.env.process(self.process_flow(flow, sfc))
                     else:
                         log.warning(f'SF was not found at requested node. Dropping flow {flow.flow_id}.')
@@ -281,12 +281,10 @@ class FlowSimulator:
                             f'Dropping flow!')
                 log.warning(ex)
                 self.drop_flow(flow)
-                self.env.exit()
         else:
             # Next node could not determined: drop flow
             log.warning(f'Flow {flow.flow_id}: Forwarding rule not found at {flow.current_node_id}. Dropping flow!')
             self.drop_flow(flow)
-            self.env.exit()
 
     def forward_flow_to_neighbor(self, flow, neighbor_id):
         '''
@@ -415,8 +413,8 @@ class FlowSimulator:
 
             # Remove load from sf
             self.params.network.nodes[current_node_id]['available_sf'][current_sf]['load'] -= flow.dr
-            assert self.params.network.nodes[current_node_id]['available_sf'][current_sf][
-                       'load'] >= 0, 'SF load cannot be less than 0!'
+            assert self.params.network.nodes[current_node_id]['available_sf'][current_sf]['load'] >= 0, \
+                'SF load cannot be less than 0!'
             # Recalculation is necessary because other flows could have already arrived or departed at the node
             used_total_capacity = 0.0
             for sf_i, sf_data in self.params.network.nodes[current_node_id]['available_sf'].items():
@@ -462,13 +460,18 @@ class FlowSimulator:
         This function concentrates actions that need to be carried out when dropping a flow. At the moment
         there is no real advantage in this outsourcing, but future version might introduce more actions.
         """
+        if flow.dropped:
+            log.info(f'Flow {flow.flow_id} was dropped already. Not dropping again.')
+            return
+
         # Update metrics for the dropped flow
         self.metrics.dropped_flow(flow)
         self.metrics.add_end2end_delay_of_dropped_flows(flow.end2end_delay)
 
         # assert flow['state'] == 'drop', f'Algorithm has not foreseen drop of flow {flow.flow_id}'
-        if flow['state'] != 'drop':
-            print(f'Algorithm has not foreseen drop of flow {flow.flow_id}')
+        if 'state' in flow.user_data.keys():
+            if flow['state'] != 'drop':
+                log.warning(f'Algorithm has not foreseen drop of flow {flow.flow_id}')
 
-        if 'drop_flow' in self.params.interception_callbacks:
-            self.params.interception_callbacks['drop_flow'](flow)
+            if 'drop_flow' in self.params.interception_callbacks:
+                self.params.interception_callbacks['drop_flow'](flow)
