@@ -14,15 +14,15 @@ metrics2index = settings.metrics2index
 
 
 # Custom settings
-runs = [str(x) for x in range(0, 50)]
+runs = [str(x) for x in range(150, 200)]
 # config = ['hc_0.3+']
 config = ['hc', 'lnc']
 # networks = ['gts_ce_149.graphml']
 networks = ['dfn_58.graphml']
-ing = '0.4'
+ing = '0.3'
 # algos = ['gpasp', 'spr1', 'spr2']
-algos = ['gpasp', 'spr2']
-# algos = ['bjointsp', 'bjointsp_recalc']
+# algos = ['gpasp', 'spr2']
+algos = ['bjointsp', 'bjointsp_recalc']
 metric_sets = {'flow': ['total_flows', 'successful_flows', 'dropped_flows', 'in_network_flows', 'perc_successful_flows'],
                'delay': ['avg_end2end_delay_of_processed_flows'],
                'load': ['avg_node_load', 'avg_link_load']}
