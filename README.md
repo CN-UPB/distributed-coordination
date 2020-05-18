@@ -1,32 +1,19 @@
-Copy of https://github.com/ldklenner/coordination-simulation-ba-adapted/tree/adapted
+# Fully Distributed Service Coordination
 
-# Simulation: Coordination of chained virtual network functions
+Two fully distributed algorithms for online service coordination. 
+All nodes runs the algorithm individually and in parallel to decide how to scale and where to place
+service components as well as how to route incoming flows through the placed instances.
 
-Simulate flow-level, inter-node network coordination including scaling and placement of services and routing flows between them. Note: this repository holds an altered version of the original simulator [coord-sim](https://github.com/RealVNF/coordination-simulation), adapted to my needs in order to accomplish my bachelor thesis.
+This fully distributed approach reaches similar solution quality as centralized approaches
+but is more robust, requires less global knowledge, and is magnitudes faster.
 
-
-**Additional features**:
-
-* Forwarding capabilities. Prior to this, forwarding happened implicit. Now flows are explicit forwarded over link, taking into account individual link utilization
-* Individual flow forwarding rules. A node can make a forwarding decision on individual flows.
-* Individual flow processing rules. A node can explicit decide if it will process a flow.
-* Extended simulator state and action interface.
-* Algorithm callback interface. To allow a external algorithm to capture certain event, it can register callback functions invoked by the flowsimulator.
-	* init_flow callback
-	* pass_flow callback
-	* periodic measurement callbacks.
-* Adapted metrics.
-* Egress node routing.
-* Extended simulator configuration
+This repository contains prototype implementations of both algorithms,
+extends [`coord-sim`](https://github.com/RealVNF/coord-sim) for simulation, and contains extensive evaluation results.
 
 
 ## Setup
 
-Requires Python 3.6. Install with [virtualenv](https://virtualenv.pypa.io/en/stable/) to not break original coord-sim installation. Make sure to install simulator with adapted source files, located on the default `adapted` branch:
-
-Depends on [`common-utils`](https://github.com/RealVNF/common-utils) and [B-JointSP](https://github.com/CN-UPB/B-JointSP) for centralized placement.
-
-All dependencies can be installed with: 
+Requires Python 3.6+. All dependencies can be installed with: 
 
 ```bash
 python setup.py install
@@ -37,8 +24,6 @@ For evaluation, also install these dependencies:
 ```
 pip install -r eval_requirements.txt
 ```
-
-Due to the use of deprecated networkx functions and their removal in the 2.4 version, released while developing, the networkx library is locked to version 2.3
 
 ## Usage
 
@@ -56,4 +41,32 @@ Due to the use of deprecated networkx functions and their removal in the 2.4 ver
 * To evaluate the results, aggregate and plot them.
 * To aggregate, run `aggregator.py`. You can adjust settings in `settings.py`. 
 * In case of 3x3, also specify the runs to aggregate, eg, `python aggregator.py 0 49`.
-* Then plot with `plotter.py`. Or easier (for me) with a Jupyter notebook such as `time/eval.ipynb`
+* Then plot with `plotter.py`. Or easier using/extending the available Jupyter notebooks under `execution`:
+`3x3/eval.ipynb`, `3x3/eval_decisions.ipynb`, `time/eval.ipynb`.
+* These notebooks use and plot the available evaluation results, which are stored in the `scenarios` and `transformed` folders. 
+
+
+
+## Simulation
+
+For simulation, the [`coord-sim`](https://github.com/RealVNF/coord-sim) simulator was extended as follows:
+
+* Forwarding capabilities. Prior to this, forwarding happened implicit. Now flows are explicit forwarded over link, taking into account individual link utilization
+* Individual flow forwarding rules. A node can make a forwarding decision on individual flows.
+* Individual flow processing rules. A node can explicit decide if it will process a flow.
+* Extended simulator state and action interface.
+* Algorithm callback interface. To allow a external algorithm to capture certain event, it can register callback functions invoked by the flowsimulator.
+	* init_flow callback
+	* pass_flow callback
+	* periodic measurement callbacks.
+* Adapted metrics.
+* Egress node routing.
+* Extended simulator configuration
+
+
+## Contributors
+
+* Main development: [@ldklenner](https://github.com/ldklenner)
+* Advisor: [@stefanbschneider](https://github.com/stefanbschneider)
+
+Please use GitHub's issue system to file bugs or ask questions.

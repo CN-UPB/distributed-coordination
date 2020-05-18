@@ -21,17 +21,12 @@ test_requirements = [
     'nose2'
 ]
 
-dependency_links = [
-    'git+https://github.com/RealVNF/coord-env-interface'
-]
-
 setup(
     name='distributed-coordination',
-    version='0.9.4',
-    description='Fully distributed algorithms for service coordination. With simulator built in.',
+    version='1.0.0',
+    description='Algorithms for fully distributed service coordination. With simulator built in.',
     url='https://github.com/CN-UPB/distributed-coordination',
     author='Stefan Schneider',
-    dependency_links=dependency_links,
     package_dir={'': 'src'},
     packages=find_packages('src'),
     include_package_data=True,
