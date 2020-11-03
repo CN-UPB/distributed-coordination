@@ -10,6 +10,20 @@ but is more robust, requires less global knowledge, and is magnitudes faster.
 This repository contains prototype implementations of both algorithms,
 extends [`coord-sim`](https://github.com/RealVNF/coord-sim) for simulation, and contains extensive evaluation results.
 
+## Citation
+
+If you use this code, please cite our paper:
+
+```
+@inproceedings{schneider2020distributed,
+	title={Every Node for Itself: Fully Distributed Service Coordination},
+	author={Schneider, Stefan and Klenner, Lars Dietrich and Karl, Holger},
+	booktitle={International Conference on Network and Service Management (CNSM)},
+	year={2020},
+	publisher={IFIP/IEEE}
+}
+```
+
 
 ## Setup
 
