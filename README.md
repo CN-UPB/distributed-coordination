@@ -12,7 +12,7 @@ extends [`coord-sim`](https://github.com/RealVNF/coord-sim) for simulation, and 
 
 ## Citation
 
-If you use this code, please cite our paper:
+If you use this code, please cite our [paper](http://dl.ifip.org/db/conf/cnsm/cnsm2020/1570653213.pdf):
 
 ```
 @inproceedings{schneider2020distributed,
